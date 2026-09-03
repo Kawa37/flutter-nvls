@@ -19,12 +19,12 @@ class MyApp extends StatelessWidget {
       home: MainScreen(),
       themeMode: ThemeMode.system,
       theme: ThemeData(
-        colorSchemeSeed: Colors.redAccent,
+        colorSchemeSeed: Colors.red,
         useMaterial3: true,
         brightness: Brightness.light,
       ),
       darkTheme: ThemeData(
-        colorSchemeSeed: Colors.redAccent,
+        colorSchemeSeed: Colors.red,
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
@@ -42,18 +42,15 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int currPage = 0;
 
-  final List<Widget> pages = [HomePage(), HistoryPage()];
+  final List<Widget> pages = [HomePage('Home'), HistoryPage()];
   final List<String> titles = ['Home', 'Search'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          titles[currPage],
-          // style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+        title: Text(titles[currPage]),
+        backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       body: Center(
         child: IndexedStack(index: currPage, children: pages),

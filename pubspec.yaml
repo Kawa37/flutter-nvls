@@ -36,6 +36,7 @@ dependencies:
     # The following adds the Cupertino Icons font to your application.
     # Use with the CupertinoIcons class for iOS style icons.
     cupertino_icons: ^1.0.8
+    file_picker: ^8.0.0
 
 dev_dependencies:
     flutter_test:
@@ -65,35 +66,31 @@ flutter:
     #   - images/a_dot_burr.jpeg
     #   - images/a_dot_ham.jpeg
     assets:
-        - assets/img/Hexagon.png
-        - assets/img/pfp.png
-        - assets/img/splashda.png
-        - assets/img/sunless-shadow-slave-v0-zq3ph38ah9bf1.jpg
-        - assets/nvl-imgs/cover_assassinate_wonderwind.webp
-        - assets/nvl-imgs/cover_bloodstone_immortal_five_element_sovereign.webp
-        - assets/nvl-imgs/cover_clara_casewell,_attorney_to_the_villainess.webp
-        - assets/nvl-imgs/cover_ending_maker.webp
-        - assets/nvl-imgs/cover_i_am_the_heroine's_master.webp
-        - assets/nvl-imgs/cover_i_became_the_scoundrel_in_the_popular_dating_sim.webp
-        - assets/nvl-imgs/cover_i_only_love_my_greatest_enemy.webp
-        - assets/nvl-imgs/cover_kidnapped_dragons.webp
-        - assets/nvl-imgs/cover_leaving_a_legacy.webp
-        - assets/nvl-imgs/cover_magical_girl_gunslinger.webp
-        - assets/nvl-imgs/cover_max_level_sword_sage.webp
-        - assets/nvl-imgs/cover_mother_of_learning.webp
-        - assets/nvl-imgs/cover_my_glorius_life.webp
-        - assets/nvl-imgs/cover_others_summon_dragons_i_summon_legendary_knights.webp
-        - assets/nvl-imgs/cover_reverend_insanity.webp
-        - assets/nvl-imgs/cover_rock_falls,_everyone_dies.webp
-        - assets/nvl-imgs/cover_shadow_slave.webp
-        - assets/nvl-imgs/cover_supreme_magus.webp
-        - assets/nvl-imgs/cover_the_author's_pov.webp
-        - assets/nvl-imgs/cover_the_dungeon_of_arceus.webp
-        - assets/nvl-imgs/cover_the_perfect_run.webp
-        - assets/nvl-imgs/cover_the_second_coming_of_gluttony.webp
-        - assets/nvl-imgs/cover_the_world_of_otome_games_is_tough_for_mobs.webp
-        - assets/nvl-imgs/cover_the_worst_litrpg_story_on_royal_road.webp
-        - assets/nvl-imgs/cover_throne_of_time.webp
+        - assets/nvls/assassinate_wonderwind/
+        - assets/nvls/bloodstone_immortal_five_element_sovereign/
+        - assets/nvls/clara_casewell,_attorney_to_the_villainess/
+        - assets/nvls/ending_maker/
+        - assets/nvls/i_am_the_heroine's_master/
+        - assets/nvls/i_became_the_scoundrel_in_the_popular_dating_sim/
+        - assets/nvls/i_only_love_my_greatest_enemy/
+        - assets/nvls/kidnapped_dragons/
+        - assets/nvls/leaving_a_legacy/
+        - assets/nvls/magical_girl_gunslinger/
+        - assets/nvls/max_level_sword_sage/
+        - assets/nvls/mother_of_learning/
+        - assets/nvls/my_glorius_life/
+        - assets/nvls/others_summon_dragons_i_summon_legendary_knights/
+        - assets/nvls/reverend_insanity/
+        - assets/nvls/rock_falls,_everyone_dies/
+        - assets/nvls/shadow_slave/
+        - assets/nvls/supreme_magus/
+        - assets/nvls/the_author's_pov/
+        - assets/nvls/the_dungeon_of_arceus/
+        - assets/nvls/the_perfect_run/
+        - assets/nvls/the_second_coming_of_gluttony/
+        - assets/nvls/the_world_of_otome_games_is_tough_for_mobs/
+        - assets/nvls/the_worst_litrpg_story_on_royal_road/
+        - assets/nvls/throne_of_time/
 
     # An image asset can refer to one or more resolution-specific "variants", see
     # https://flutter.dev/to/resolution-aware-images

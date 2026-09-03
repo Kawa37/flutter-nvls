@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:novels/chaplist.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  const HomePage(this.title, {super.key});
 
+  final String title;
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  final box = Hive.box('mybox');
   late Map sorter;
   @override
   void initState() {
@@ -200,10 +203,30 @@ class _HomePageState extends State<HomePage> {
     },
   ];
 
-  final box = Hive.box('mybox');
-
   @override
   Widget build(BuildContext context) {
+    final saved = box.get('sorting-order', defaultValue: {}) as Map;
+    Map orderMap;
+
+    if (data.length != saved.length) {
+      Map newOrder = {};
+      for (var e in data) {
+        final id = e['id'];
+        newOrder[id] = saved.containsKey(id) ? saved[id] : 0;
+      }
+      box.put('sorting-order', newOrder);
+      orderMap = newOrder;
+    } else {
+      orderMap = saved;
+    }
+
+    // sorted list of ids, biggest value first
+    List<String> order = orderMap.keys.cast<String>().toList()
+      ..sort((a, b) => orderMap[b]!.compareTo(orderMap[a]!));
+
+    // quick lookup: id -> value map, so we don't search `data` on every build
+    final dataById = {for (var e in data) e['id'] as String: e['value'] as Map};
+
     return Scaffold(
       body: GridView.builder(
         padding: EdgeInsets.all(10),
@@ -211,30 +234,44 @@ class _HomePageState extends State<HomePage> {
           crossAxisCount: 3,
           childAspectRatio: 0.6,
         ),
-        itemCount: data.length,
+        itemCount: order.length,
         itemBuilder: (context, index) {
-          final item = data[index];
-          final id = item['id'];
-          final value = item['value'];
-          return Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              spacing: 5,
-              children: [
-                Image.asset('assets/nvl-imgs/cover_$id.webp'),
-                Text(
-                  value['title'],
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
+          final String id = order[index];
+          final Map value = dataById[id]!;
+
+          return InkWell(
+            onTap: () {
+              box.put('the-last', id);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      ChapList(nvlTitle: value['title'], id: id),
                 ),
-              ],
+              );
+            },
+            child: Card(
+              child: Column(
+                spacing: 5,
+                children: [
+                  Image.asset('assets/nvl-imgs/cover_$id.webp'),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                    child: Text(
+                      value['title'],
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
-        child: Icon(Icons.switch_access_shortcut_sharp),
+        child: Icon(Icons.play_arrow),
       ),
     );
   }
