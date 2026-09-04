@@ -1,0 +1,182 @@
+[
+    {
+        "id": "assassinate_wonderwind",
+        "value": {
+            "chapters": 25,
+            "readingKey": "aw_reading",
+            "title": "Assassinate Wonderwind",
+            "description": ""
+        }
+    },
+    {
+        "id": "bloodstone_immortal_five_element_sovereign",
+        "value": {
+            "chapters": 10,
+            "readingKey": "bifes_reading",
+            "title": "Bloodstone Immortal Five Element Sovereign",
+            "description": ""
+        }
+    },
+    {
+        "id": "clara_casewell,_attorney_to_the_villainess",
+        "value": {
+            "chapters": 60,
+            "readingKey": "ccattv_reading",
+            "title": "Clara Casewell, Attorney To The Villainess",
+            "description": ""
+        }
+    },
+    {
+        "id": "i_am_the_heroine's_master",
+        "value": {
+            "chapters": 10,
+            "readingKey": "iathm_reading",
+            "title": "I Am The Heroine's Master",
+            "description": ""
+        }
+    },
+    {
+        "id": "i_became_the_scoundrel_in_the_popular_dating_sim",
+        "value": {
+            "chapters": 186,
+            "readingKey": "ibtsitpds_reading",
+            "title": "I Became The Scoundrel In The Popular Dating Sim",
+            "description": ""
+        }
+    },
+    {
+        "id": "leaving_a_legacy",
+        "value": {
+            "chapters": 10,
+            "readingKey": "lal_reading",
+            "title": "Leaving A Legacy",
+            "description": ""
+        }
+    },
+    {
+        "id": "max_level_sword_sage",
+        "value": {
+            "chapters": 11,
+            "readingKey": "mlss_reading",
+            "title": "Max Level Sword Sage",
+            "description": ""
+        }
+    },
+    {
+        "id": "mother_of_learning",
+        "value": {
+            "chapters": 30,
+            "readingKey": "mol_reading",
+            "title": "Mother Of Learning",
+            "description": ""
+        }
+    },
+    {
+        "id": "my_glorius_life",
+        "value": {
+            "chapters": 18,
+            "readingKey": "mgl_reading",
+            "title": "My Glorius Life",
+            "description": ""
+        }
+    },
+    {
+        "id": "others_summon_dragons_i_summon_legendary_knights",
+        "value": {
+            "chapters": 10,
+            "readingKey": "osdislk_reading",
+            "title": "Others Summon Dragons I Summon Legendary Knights",
+            "description": ""
+        }
+    },
+    {
+        "id": "reverend_insanity",
+        "value": {
+            "chapters": 10,
+            "readingKey": "ri_reading",
+            "title": "Reverend Insanity",
+            "description": ""
+        }
+    },
+    {
+        "id": "rock_falls,_everyone_dies",
+        "value": {
+            "chapters": 21,
+            "readingKey": "rfed_reading",
+            "title": "Rock Falls, Everyone Dies",
+            "description": ""
+        }
+    },
+    {
+        "id": "shadow_slave",
+        "value": {
+            "chapters": 1400,
+            "readingKey": "ss_reading",
+            "title": "Shadow Slave",
+            "description": "Ranks:\n\n1. Dormant Dormant Beast\n\n2. Awakened Awakened Monster\n\n3. Ascended Fallen Demon\n\n4. Transcendent Corrupted Devil\n\n5. Supreme Great Tyrant\n\n6. Sacred Cursed Terror\n\n7. Divine UnBoly Titan"
+        }
+    },
+    {
+        "id": "supreme_magus",
+        "value": {
+            "chapters": 10,
+            "readingKey": "sm_reading",
+            "title": "Supreme Magus",
+            "description": ""
+        }
+    },
+    {
+        "id": "the_author's_pov",
+        "value": {
+            "chapters": 10,
+            "readingKey": "tap_reading",
+            "title": "The Author's Pov",
+            "description": ""
+        }
+    },
+    {
+        "id": "the_dungeon_of_arceus",
+        "value": {
+            "chapters": 18,
+            "readingKey": "tdoa_reading",
+            "title": "The Dungeon Of Arceus",
+            "description": ""
+        }
+    },
+    {
+        "id": "the_perfect_run",
+        "value": {
+            "chapters": 50,
+            "readingKey": "tpr_reading",
+            "title": "The Perfect Run",
+            "description": ""
+        }
+    },
+    {
+        "id": "the_second_coming_of_gluttony",
+        "value": {
+            "chapters": 10,
+            "readingKey": "tscog_reading",
+            "title": "The Second Coming Of Gluttony",
+            "description": ""
+        }
+    },
+    {
+        "id": "the_worst_litrpg_story_on_royal_road",
+        "value": {
+            "chapters": 28,
+            "readingKey": "twlsorr_reading",
+            "title": "The Worst Litrpg Story On Royal Road",
+            "description": ""
+        }
+    },
+    {
+        "id": "throne_of_time",
+        "value": {
+            "chapters": 10,
+            "readingKey": "tot_reading",
+            "title": "Throne Of Time",
+            "description": ""
+        }
+    }
+]

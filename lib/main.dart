@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:novels/home.dart';
 import 'package:novels/history.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,9 +25,11 @@ class MyApp extends StatelessWidget {
         colorSchemeSeed: Colors.red,
         useMaterial3: true,
         brightness: Brightness.light,
+        fontFamily: 'JetBrainsMono',
       ),
       darkTheme: ThemeData(
         colorSchemeSeed: Colors.red,
+        fontFamily: 'JetBrainsMono',
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
@@ -43,13 +48,29 @@ class _MainScreenState extends State<MainScreen> {
   int currPage = 0;
 
   final List<Widget> pages = [HomePage('Home'), HistoryPage()];
-  final List<String> titles = ['Home', 'Search'];
+  final List<String> titles = ['Home', 'History'];
+
+  List data = [];
+
+  void load() async {
+    final rawData = await rootBundle.loadString('assets/data.json');
+    setState(() {
+      data = jsonDecode(rawData);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    load();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(titles[currPage]),
+        title: Text('${titles[currPage]} [${data.length}]'),
         backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       body: Center(

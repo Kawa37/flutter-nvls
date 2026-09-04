@@ -3,10 +3,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:novels/reading.dart';
 
 class ChapList extends StatefulWidget {
-  final String nvlTitle;
   final String id;
-
-  const ChapList({super.key, this.nvlTitle = 'None', required this.id});
+  final Map data;
+  const ChapList({super.key, required this.id, required this.data});
 
   @override
   State<ChapList> createState() => _ChapListState();
@@ -15,49 +14,157 @@ class ChapList extends StatefulWidget {
 class _ChapListState extends State<ChapList> {
   final box = Hive.box('mybox');
 
+  void saveHistory(String id, int chap) {
+    final history = box.get('history', defaultValue: []) as List;
+    Map hisdata = {"id": id, "chap": chap};
+    if (history.isNotEmpty && history.first['id'] != widget.id) {
+      history.insert(0, hisdata);
+    } else if (history.isEmpty) {
+      history.add(hisdata);
+    } else if (history.first['id'] == widget.id) {
+      history[0] = hisdata;
+    }
+    box.put('history', history);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
+    final marks = box.get('${widget.id}_bookmarks', defaultValue: []) as List;
+    final Map data = widget.data[widget.id];
+    final String nvlTitle = data['title'];
+
     return Scaffold(
-      appBar: AppBar(title: Text(widget.nvlTitle)),
-      body: ListView(
-        children: [
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Row(
-              mainAxisAlignment: .start,
-              crossAxisAlignment: .start,
+      appBar: AppBar(title: Text(nvlTitle)),
+      body: ValueListenableBuilder(
+        valueListenable: box.listenable(
+          keys: ['last-${widget.id}-chap', '${widget.id}_bookmarks'],
+        ),
+        builder: (context, Box box, _) {
+          final lastChap =
+              box.get('last-${widget.id}-chap', defaultValue: 1) as int;
+
+          return Scrollbar(
+            thickness: 15,
+            radius: Radius.circular(10),
+            interactive: true,
+            child: ListView(
+              padding: EdgeInsets.only(bottom: 100),
               children: [
-                Image.asset(
-                  'assets/nvl-imgs/cover_${widget.id}.webp',
-                  width: 200,
-                ),
                 Container(
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    widget.nvlTitle,
-                    style: TextStyle(fontSize: 18, overflow: TextOverflow.clip),
-                    softWrap: true,
+                  padding: EdgeInsets.all(10),
+                  child: Row(
+                    mainAxisAlignment: .start,
+                    crossAxisAlignment: .start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/nvls/${widget.id}/cover_${widget.id}.webp',
+                          width: 200,
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          padding: EdgeInsets.all(20),
+                          child: Text(
+                            nvlTitle,
+                            style: TextStyle(fontSize: 18),
+                            softWrap: true,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                SizedBox(height: 50),
+                Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      Icon(Icons.book),
+                      Text(
+                        '${data['chapters']}',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      SizedBox(width: 10),
+
+                      Icon(Icons.bookmark, color: theme.secondary),
+                      Text('${marks.length}', style: TextStyle(fontSize: 18)),
+                    ],
+                  ),
+                ),
+                for (int i = data['chapters']; i > 0; i--)
+                  ListTile(
+                    title: Row(
+                      children: [
+                        if (marks.contains(i))
+                          Icon(Icons.bookmark, color: theme.secondary),
+                        Text(
+                          '$i',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: i < lastChap ? Colors.grey : Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: i < lastChap
+                        ? Text(' ')
+                        : Text(
+                            '-',
+                            style: TextStyle(fontSize: 16, color: Colors.red),
+                          ),
+                    textColor: i < lastChap
+                        ? Color.fromRGBO(200, 200, 200, 50)
+                        : Colors.white,
+
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    tileColor: i < lastChap
+                        ? theme.surface
+                        : theme.surfaceContainer,
+                    onTap: () {
+                      saveHistory(widget.id, i);
+                      final raw =
+                          box.get('sorting-order', defaultValue: {}) as Map;
+                      Map yeah = raw;
+                      yeah[widget.id] = DateTime.now().millisecondsSinceEpoch;
+
+                      box.put('sorting-order', yeah);
+                      box.put('last-nvl', widget.id);
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              Reading(chapter: i, id: widget.id),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
-          ),
-          SizedBox(height: 50),
-          for (int i = 1; i < 21; i++)
-            ListTile(
-              title: Text('$i'),
-              onTap: () {
-                final raw = box.get('sorting-order', defaultValue: {}) as Map;
-                Map yeah = raw;
-                yeah[widget.id] = DateTime.now();
-                box.put('sorting-order', yeah);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Reading(chapter: i)),
-                );
-              },
-            ),
-        ],
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          final lastChap1 =
+              box.get('last-${widget.id}-chap', defaultValue: 1) as int;
+          if (lastChap1 <= data['chapters']) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    Reading(id: widget.id, chapter: lastChap1),
+              ),
+            );
+          }
+        },
+        child: Icon(Icons.play_arrow),
       ),
     );
   }
