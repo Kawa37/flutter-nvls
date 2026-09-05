@@ -78,9 +78,10 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currPage,
-        onDestinationSelected: (intex) {
+
+        onDestinationSelected: (index) {
           setState(() {
-            currPage = intex;
+            currPage = index;
           });
         },
         destinations: [

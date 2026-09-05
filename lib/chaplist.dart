@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:novels/reading.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 class ChapList extends StatefulWidget {
   final String id;
@@ -27,10 +28,27 @@ class _ChapListState extends State<ChapList> {
     box.put('history', history);
   }
 
+  void toggleBookmark(int chap) {
+    final marks = box.get('${widget.id}_bookmarks', defaultValue: []) as List;
+    if (marks.contains(chap)) {
+      marks.remove(chap);
+    } else {
+      marks.add(chap);
+    }
+    box.put('${widget.id}_bookmarks', marks);
+  }
+
+  void toggleRead(int chap, int lastChap) {
+    final bool isRead = chap < lastChap;
+    final newLastChap = isRead ? chap : chap + 1;
+
+    box.delete('${widget.id}_${chap}_scroll');
+    box.put('last-${widget.id}-chap', newLastChap);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).colorScheme;
-    final marks = box.get('${widget.id}_bookmarks', defaultValue: []) as List;
     final Map data = widget.data[widget.id];
     final String nvlTitle = data['title'];
 
@@ -41,6 +59,8 @@ class _ChapListState extends State<ChapList> {
           keys: ['last-${widget.id}-chap', '${widget.id}_bookmarks'],
         ),
         builder: (context, Box box, _) {
+          final marks =
+              box.get('${widget.id}_bookmarks', defaultValue: []) as List;
           final lastChap =
               box.get('last-${widget.id}-chap', defaultValue: 1) as int;
 
@@ -95,52 +115,131 @@ class _ChapListState extends State<ChapList> {
                   ),
                 ),
                 for (int i = data['chapters']; i > 0; i--)
-                  ListTile(
-                    title: Row(
-                      children: [
-                        if (marks.contains(i))
-                          Icon(Icons.bookmark, color: theme.secondary),
-                        Text(
-                          '$i',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: i < lastChap ? Colors.grey : Colors.white,
+                  Builder(
+                    builder: (context) {
+                      final isBookmarked = marks.contains(i);
+                      final isRead = i < lastChap;
+                      BuildContext? tileContext; // NEW: will hold a context *inside* the Slidable
+                      return Slidable(
+                        key: ValueKey(i),
+
+                        endActionPane: ActionPane(
+                          extentRatio: 0.25,
+                          motion: ScrollMotion(),
+                          dismissible: DismissiblePane(
+                            dismissThreshold: .3,
+                            confirmDismiss: () async {
+                              toggleBookmark(i);
+                              if (tileContext != null) {
+                                Slidable.of(tileContext!)?.close();
+                              }
+                              return false;
+                            },
+                            onDismissed: () {},
                           ),
+                          children: [
+                            SlidableAction(
+                              onPressed: (_) => toggleBookmark(i),
+                              icon: isBookmarked
+                                  ? Icons.bookmark_remove
+                                  : Icons.bookmark_add,
+                              label: isBookmarked ? 'Unmark' : 'Bookmark',
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    subtitle: i < lastChap
-                        ? Text(' ')
-                        : Text(
-                            '-',
-                            style: TextStyle(fontSize: 16, color: Colors.red),
+
+                        startActionPane: ActionPane(
+                          motion: const ScrollMotion(),
+                          extentRatio: 0.25,
+                          dismissible: DismissiblePane(
+                            dismissThreshold: .3,
+                            confirmDismiss: () async {
+                              toggleRead(i, lastChap);
+                              if (tileContext != null) {
+                                Slidable.of(tileContext!)?.close();
+                              }
+                              return false;
+                            },
+                            onDismissed: () {},
                           ),
-                    textColor: i < lastChap
-                        ? Color.fromRGBO(200, 200, 200, 50)
-                        : Colors.white,
+                          children: [
+                            SlidableAction(
+                              onPressed: (_) => toggleRead(i, lastChap),
+                              backgroundColor: isRead
+                                  ? Colors.grey
+                                  : Colors.green,
+                              foregroundColor: Colors.white,
+                              icon: isRead ? Icons.visibility_off : Icons.check,
+                              label: isRead ? 'Unread' : 'Read',
+                            ),
+                          ],
+                        ),
 
-                    shape: RoundedRectangleBorder(
-                      side: BorderSide(),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    tileColor: i < lastChap
-                        ? theme.surface
-                        : theme.surfaceContainer,
-                    onTap: () {
-                      saveHistory(widget.id, i);
-                      final raw =
-                          box.get('sorting-order', defaultValue: {}) as Map;
-                      Map yeah = raw;
-                      yeah[widget.id] = DateTime.now().millisecondsSinceEpoch;
+                        child: Builder(
+                          builder: (context) {
+                            tileContext = context;
+                            return ListTile(
+                              title: Row(
+                                children: [
+                                  if (marks.contains(i))
+                                    Icon(
+                                      Icons.bookmark,
+                                      color: theme.secondary,
+                                    ),
+                                  Text(
+                                    '$i',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: i < lastChap
+                                          ? Colors.grey
+                                          : Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              subtitle: i < lastChap
+                                  ? Text(' ')
+                                  : Text(
+                                      '-',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                              textColor: i < lastChap
+                                  ? Colors.grey
+                                  : Colors.white,
 
-                      box.put('sorting-order', yeah);
-                      box.put('last-nvl', widget.id);
+                              shape: RoundedRectangleBorder(
+                                side: BorderSide(),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              tileColor: i < lastChap
+                                  ? theme.surface
+                                  : theme.surfaceContainer,
+                              onTap: () {
+                                saveHistory(widget.id, i);
+                                final raw = box.get(
+                                  'sorting-order',
+                                  defaultValue: {},
+                                ) as Map;
+                                Map yeah = raw;
+                                yeah[widget.id] =
+                                    DateTime.now().millisecondsSinceEpoch;
 
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              Reading(chapter: i, id: widget.id),
+                                box.put('sorting-order', yeah);
+                                box.put('last-nvl', widget.id);
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        Reading(chapter: i, id: widget.id),
+                                  ),
+                                );
+                              },
+                            );
+                          },
                         ),
                       );
                     },

@@ -17,7 +17,7 @@ class _HistoryState extends State<HistoryPage> {
   List history = [];
   Map data = {};
   void getData() async {
-    final raw = await box.get('history', defaultValue: []) as List;
+    final raw = box.get('history', defaultValue: []) as List;
     final rawData = await rootBundle.loadString('assets/data.json');
     setState(() {
       history = raw;

@@ -35,13 +35,9 @@ class _ReadingState extends State<Reading> {
     final rawMarks =
         box.get('${widget.id}_bookmarks', defaultValue: []) as List;
     savedChap = box.get('last-${widget.id}-chap', defaultValue: 1) as int;
-    if (widget.chapter < savedChap) {
-      setState(() {
-        data = {for (var e in rawData) e['id'] as String: e['value'] as Map};
-        read = true;
-      });
-    }
     setState(() {
+      data = {for (var e in rawData) e['id'] as String: e['value'] as Map};
+      read = widget.chapter < savedChap;
       chap = text;
       marks = rawMarks;
       marked = marks.contains(widget.chapter);
@@ -49,6 +45,30 @@ class _ReadingState extends State<Reading> {
   }
 
   final box = Hive.box('mybox');
+
+  void toNextChap() {
+    if (widget.chapter + 1 > data[widget.id]['chapters']) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            Reading(id: widget.id, chapter: widget.chapter + 1),
+      ),
+    );
+  }
+
+  void toPrevChap() {
+    if (widget.chapter - 1 > 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              Reading(id: widget.id, chapter: widget.chapter - 1),
+        ),
+      );
+    }
+  }
 
   void markChap() {
     setState(() {
@@ -82,7 +102,7 @@ class _ReadingState extends State<Reading> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
           _scrollController.animateTo(
-            duration: Duration(microseconds: 1000),
+            duration: Duration(milliseconds: 1000),
             curve: Curves.bounceInOut,
             (savedOffset as double).clamp(
               0,
@@ -103,7 +123,6 @@ class _ReadingState extends State<Reading> {
       saved = true;
       read = true;
     });
-    print('saved');
   }
 
   void _onScroll() {
@@ -141,46 +160,47 @@ class _ReadingState extends State<Reading> {
         thickness: 15,
         radius: Radius.circular(10),
         interactive: true,
-        child: SingleChildScrollView(
-          controller: _scrollController,
-          padding: EdgeInsets.all(16),
-          child: chap == null
-              ? Center(child: CircularProgressIndicator())
-              : Column(
-                  children: [
-                    Text(chap!, style: TextStyle(fontSize: 20)),
-                    SizedBox(height: 100),
-                    if (widget.chapter < savedChap - 1)
-                      FilledButton(
-                        onPressed: () {
-                          saveProg();
-                        },
-                        child: savePos ? Text('Save?') : Icon(Icons.check),
-                      ),
-                    SizedBox(height: 100),
-                  ],
-                ),
+        child: GestureDetector(
+          onHorizontalDragEnd: (details) {
+            if (details.primaryVelocity! > 0) {
+              toPrevChap();
+            } else if (details.primaryVelocity! < 0) {
+              toNextChap();
+            }
+          },
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: EdgeInsets.all(16),
+            child: chap == null
+                ? Center(child: CircularProgressIndicator())
+                : Column(
+                    children: [
+                      Text(chap!, style: TextStyle(fontSize: 20)),
+                      SizedBox(height: 100),
+                      if (widget.chapter < savedChap - 1)
+                        FilledButton(
+                          onPressed: () {
+                            saveProg();
+                          },
+                          child: savePos ? Text('Save?') : Icon(Icons.check),
+                        ),
+                      SizedBox(height: 100),
+                    ],
+                  ),
+          ),
         ),
       ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: .spaceAround,
           children: [
-            ElevatedButton(
+            OutlinedButton(
               onPressed: () {
-                if (widget.chapter - 1 > 0) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          Reading(id: widget.id, chapter: widget.chapter - 1),
-                    ),
-                  );
-                }
+                toPrevChap();
               },
               child: Icon(Icons.keyboard_arrow_left, size: 26),
             ),
-            ElevatedButton(
+            OutlinedButton(
               onPressed: () {
                 markChap();
               },
@@ -191,15 +211,7 @@ class _ReadingState extends State<Reading> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (widget.chapter + 1 > data[widget.id]['chapters']) return;
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        Reading(id: widget.id, chapter: widget.chapter + 1),
-                  ),
-                );
+                toNextChap();
               },
               child: Icon(Icons.keyboard_arrow_right, size: 26),
             ),
