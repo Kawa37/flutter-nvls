@@ -101,9 +101,9 @@ class _ReadingState extends State<Reading> {
     if (savedOffset != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            duration: Duration(milliseconds: 1000),
-            curve: Curves.bounceInOut,
+          _scrollController.jumpTo(
+            // duration: Duration(milliseconds: 1000),
+            // curve: Curves.bounceInOut,
             (savedOffset as double).clamp(
               0,
               _scrollController.position.maxScrollExtent,
@@ -198,7 +198,7 @@ class _ReadingState extends State<Reading> {
               onPressed: () {
                 toPrevChap();
               },
-              child: Icon(Icons.keyboard_arrow_left, size: 26),
+              child: Icon(Icons.chevron_left, size: 26),
             ),
             OutlinedButton(
               onPressed: () {
@@ -209,11 +209,11 @@ class _ReadingState extends State<Reading> {
                 size: 26,
               ),
             ),
-            ElevatedButton(
+            OutlinedButton(
               onPressed: () {
                 toNextChap();
               },
-              child: Icon(Icons.keyboard_arrow_right, size: 26),
+              child: Icon(Icons.chevron_right, size: 26),
             ),
           ],
         ),

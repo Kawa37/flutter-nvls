@@ -14,6 +14,16 @@ class ChapList extends StatefulWidget {
 
 class _ChapListState extends State<ChapList> {
   final box = Hive.box('mybox');
+  bool showBookmarks = false;
+
+  void saveOrder() {
+    final raw = box.get('sorting-order', defaultValue: {}) as Map;
+    Map yeah = raw;
+    yeah[widget.id] = DateTime.now().millisecondsSinceEpoch;
+
+    box.put('sorting-order', yeah);
+    box.put('last-nvl', widget.id);
+  }
 
   void saveHistory(String id, int chap) {
     final history = box.get('history', defaultValue: []) as List;
@@ -81,7 +91,7 @@ class _ChapListState extends State<ChapList> {
                         borderRadius: BorderRadius.circular(16),
                         child: Image.asset(
                           'assets/nvls/${widget.id}/cover_${widget.id}.webp',
-                          width: 200,
+                          width: 150,
                         ),
                       ),
                       Expanded(
@@ -97,153 +107,176 @@ class _ChapListState extends State<ChapList> {
                     ],
                   ),
                 ),
+                // Padding(
+                //   padding: const EdgeInsets.all(10),
+                //   child: Text(data['description']),
+                // ),
                 SizedBox(height: 50),
-                Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      Icon(Icons.book),
-                      Text(
-                        '${data['chapters']}',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      SizedBox(width: 10),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Row(
+                      children: [
+                        Text(
+                          '${data['chapters']} chapters',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        SizedBox(width: 10),
 
-                      Icon(Icons.bookmark, color: theme.secondary),
-                      Text('${marks.length}', style: TextStyle(fontSize: 18)),
-                    ],
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              showBookmarks = !showBookmarks;
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              Icon(Icons.bookmark, color: theme.secondary),
+                              Text(
+                                '${marks.length}',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+                Divider(),
                 for (int i = data['chapters']; i > 0; i--)
-                  Builder(
-                    builder: (context) {
-                      final isBookmarked = marks.contains(i);
-                      final isRead = i < lastChap;
-                      BuildContext? tileContext; // NEW: will hold a context *inside* the Slidable
-                      return Slidable(
-                        key: ValueKey(i),
+                  if (!(showBookmarks && !(marks.contains(i))))
+                    Builder(
+                      builder: (context) {
+                        final isBookmarked = marks.contains(i);
+                        final isRead = i < lastChap;
+                        BuildContext? tileContext;
+                        return Slidable(
+                          key: ValueKey(i),
 
-                        endActionPane: ActionPane(
-                          extentRatio: 0.25,
-                          motion: ScrollMotion(),
-                          dismissible: DismissiblePane(
-                            dismissThreshold: .3,
-                            confirmDismiss: () async {
-                              toggleBookmark(i);
-                              if (tileContext != null) {
-                                Slidable.of(tileContext!)?.close();
-                              }
-                              return false;
-                            },
-                            onDismissed: () {},
-                          ),
-                          children: [
-                            SlidableAction(
-                              onPressed: (_) => toggleBookmark(i),
-                              icon: isBookmarked
-                                  ? Icons.bookmark_remove
-                                  : Icons.bookmark_add,
-                              label: isBookmarked ? 'Unmark' : 'Bookmark',
+                          endActionPane: ActionPane(
+                            extentRatio: 0.25,
+                            motion: ScrollMotion(),
+                            dismissible: DismissiblePane(
+                              dismissThreshold: .3,
+                              confirmDismiss: () async {
+                                toggleBookmark(i);
+                                if (tileContext != null) {
+                                  Slidable.of(tileContext!)?.close();
+                                }
+                                return false;
+                              },
+                              onDismissed: () {},
                             ),
-                          ],
-                        ),
-
-                        startActionPane: ActionPane(
-                          motion: const ScrollMotion(),
-                          extentRatio: 0.25,
-                          dismissible: DismissiblePane(
-                            dismissThreshold: .3,
-                            confirmDismiss: () async {
-                              toggleRead(i, lastChap);
-                              if (tileContext != null) {
-                                Slidable.of(tileContext!)?.close();
-                              }
-                              return false;
-                            },
-                            onDismissed: () {},
-                          ),
-                          children: [
-                            SlidableAction(
-                              onPressed: (_) => toggleRead(i, lastChap),
-                              backgroundColor: isRead
-                                  ? Colors.grey
-                                  : Colors.green,
-                              foregroundColor: Colors.white,
-                              icon: isRead ? Icons.visibility_off : Icons.check,
-                              label: isRead ? 'Unread' : 'Read',
-                            ),
-                          ],
-                        ),
-
-                        child: Builder(
-                          builder: (context) {
-                            tileContext = context;
-                            return ListTile(
-                              title: Row(
-                                children: [
-                                  if (marks.contains(i))
-                                    Icon(
-                                      Icons.bookmark,
-                                      color: theme.secondary,
-                                    ),
-                                  Text(
-                                    '$i',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: i < lastChap
-                                          ? Colors.grey
-                                          : Colors.white,
-                                    ),
-                                  ),
-                                ],
+                            children: [
+                              SlidableAction(
+                                onPressed: (_) => toggleBookmark(i),
+                                icon: isBookmarked
+                                    ? Icons.bookmark_remove
+                                    : Icons.bookmark_add,
+                                label: isBookmarked ? 'Unmark' : 'Bookmark',
                               ),
-                              subtitle: i < lastChap
-                                  ? Text(' ')
-                                  : Text(
-                                      '-',
+                            ],
+                          ),
+
+                          startActionPane: ActionPane(
+                            motion: const ScrollMotion(),
+                            extentRatio: 0.25,
+                            dismissible: DismissiblePane(
+                              dismissThreshold: .3,
+                              confirmDismiss: () async {
+                                toggleRead(i, lastChap);
+                                saveOrder();
+                                saveHistory(widget.id, i);
+                                if (tileContext != null) {
+                                  Slidable.of(tileContext!)?.close();
+                                }
+                                return false;
+                              },
+                              onDismissed: () {},
+                            ),
+                            children: [
+                              SlidableAction(
+                                onPressed: (_) => toggleRead(i, lastChap),
+                                backgroundColor: isRead
+                                    ? Colors.grey
+                                    : Colors.green,
+                                foregroundColor: Colors.white,
+                                icon: isRead
+                                    ? Icons.visibility_off
+                                    : Icons.check,
+                                label: isRead ? 'Unread' : 'Read',
+                              ),
+                            ],
+                          ),
+
+                          child: Builder(
+                            builder: (context) {
+                              tileContext = context;
+                              return ListTile(
+                                title: Row(
+                                  children: [
+                                    if (marks.contains(i))
+                                      Icon(
+                                        Icons.bookmark,
+                                        color: theme.secondary,
+                                      ),
+                                    Text(
+                                      '$i',
                                       style: TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.red,
+                                        fontSize: 18,
+                                        color: i < lastChap
+                                            ? Colors.grey
+                                            : Colors.white,
                                       ),
                                     ),
-                              textColor: i < lastChap
-                                  ? Colors.grey
-                                  : Colors.white,
+                                  ],
+                                ),
+                                subtitle: Row(
+                                  children: [
+                                    i < lastChap
+                                        ? Text(' ')
+                                        :
+                                          // Icon(
+                                          //     Icons.,
+                                          //     color: theme.primary,
+                                          //     size: 16,
+                                          //   ),
+                                          Text(
+                                            '●',
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                  ],
+                                ),
+                                textColor: i < lastChap
+                                    ? Colors.grey
+                                    : Colors.white,
 
-                              shape: RoundedRectangleBorder(
-                                side: BorderSide(),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              tileColor: i < lastChap
-                                  ? theme.surface
-                                  : theme.surfaceContainer,
-                              onTap: () {
-                                saveHistory(widget.id, i);
-                                final raw = box.get(
-                                  'sorting-order',
-                                  defaultValue: {},
-                                ) as Map;
-                                Map yeah = raw;
-                                yeah[widget.id] =
-                                    DateTime.now().millisecondsSinceEpoch;
+                                shape: RoundedRectangleBorder(
+                                  side: BorderSide(),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                tileColor: i < lastChap
+                                    ? theme.surface
+                                    : theme.surfaceContainer,
+                                onTap: () {
+                                  saveHistory(widget.id, i);
+                                  saveOrder();
 
-                                box.put('sorting-order', yeah);
-                                box.put('last-nvl', widget.id);
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        Reading(chapter: i, id: widget.id),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          Reading(chapter: i, id: widget.id),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
               ],
             ),
           );
@@ -254,6 +287,7 @@ class _ChapListState extends State<ChapList> {
           final lastChap1 =
               box.get('last-${widget.id}-chap', defaultValue: 1) as int;
           if (lastChap1 <= data['chapters']) {
+            saveOrder();
             Navigator.push(
               context,
               MaterialPageRoute(

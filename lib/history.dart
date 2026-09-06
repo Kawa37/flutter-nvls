@@ -27,6 +27,15 @@ class _HistoryState extends State<HistoryPage> {
     });
   }
 
+  void saveOrder(String id) {
+    final raw = box.get('sorting-order', defaultValue: {}) as Map;
+    Map yeah = raw;
+    yeah[id] = DateTime.now().millisecondsSinceEpoch;
+
+    box.put('sorting-order', yeah);
+    box.put('last-nvl', id);
+  }
+
   @override
   Widget build(BuildContext context) {
     getData();
@@ -45,13 +54,13 @@ class _HistoryState extends State<HistoryPage> {
               title: Text(data[history[index]['id']]['title']),
               subtitle: Text(history[index]['chap'].toString()),
               onTap: () {
+                String id = history[index]['id'];
+                int chap = history[index]['chap'];
+                saveOrder(id);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Reading(
-                      id: history[index]['id'],
-                      chapter: history[index]['chap'],
-                    ),
+                    builder: (context) => Reading(id: id, chapter: chap),
                   ),
                 );
               },

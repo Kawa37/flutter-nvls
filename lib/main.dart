@@ -48,7 +48,7 @@ class _MainScreenState extends State<MainScreen> {
   int currPage = 0;
 
   final List<Widget> pages = [HomePage('Home'), HistoryPage()];
-  final List<String> titles = ['Home', 'History'];
+  final List<String> titles = ['Library', 'History'];
 
   List data = [];
 
@@ -70,11 +70,18 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${titles[currPage]} [${data.length}]'),
+        title: Text(
+          '${titles[currPage]} ${titles[currPage] == 'Home' ? '[${data.length}]' : ''}',
+        ),
         backgroundColor: Theme.of(context).colorScheme.surface,
       ),
-      body: Center(
-        child: IndexedStack(index: currPage, children: pages),
+      body: Scrollbar(
+        thickness: 15,
+        radius: Radius.circular(10),
+        interactive: true,
+        child: Center(
+          child: IndexedStack(index: currPage, children: pages),
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currPage,
@@ -85,7 +92,11 @@ class _MainScreenState extends State<MainScreen> {
           });
         },
         destinations: [
-          NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
+          NavigationDestination(
+            icon: Icon(Icons.collections_bookmark_outlined),
+            selectedIcon: Icon(Icons.collections_bookmark),
+            label: 'Home',
+          ),
           NavigationDestination(icon: Icon(Icons.history), label: 'History'),
         ],
       ),
