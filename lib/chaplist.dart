@@ -25,19 +25,6 @@ class _ChapListState extends State<ChapList> {
     box.put('last-nvl', widget.id);
   }
 
-  void saveHistory(String id, int chap) {
-    final history = box.get('history', defaultValue: []) as List;
-    Map hisdata = {"id": id, "chap": chap};
-    if (history.isNotEmpty && history.first['id'] != widget.id) {
-      history.insert(0, hisdata);
-    } else if (history.isEmpty) {
-      history.add(hisdata);
-    } else if (history.first['id'] == widget.id) {
-      history[0] = hisdata;
-    }
-    box.put('history', history);
-  }
-
   void toggleBookmark(int chap) {
     final marks = box.get('${widget.id}_bookmarks', defaultValue: []) as List;
     if (marks.contains(chap)) {
@@ -56,11 +43,16 @@ class _ChapListState extends State<ChapList> {
     box.put('last-${widget.id}-chap', newLastChap);
   }
 
+  bool ascended = true;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).colorScheme;
     final Map data = widget.data[widget.id];
     final String nvlTitle = data['title'];
+    final range = ascended
+        ? List<int>.generate(data['chapters'], (i) => i + 1)
+        : List<int>.generate(data['chapters'], (i) => data['chapters'] - i);
 
     return Scaffold(
       appBar: AppBar(title: Text(nvlTitle)),
@@ -107,12 +99,10 @@ class _ChapListState extends State<ChapList> {
                     ],
                   ),
                 ),
-                // Padding(
-                //   padding: const EdgeInsets.all(10),
-                //   child: Text(data['description']),
-                // ),
+
                 SizedBox(height: 50),
                 Card(
+                  margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
                   child: Padding(
                     padding: const EdgeInsets.all(10),
                     child: Row(
@@ -139,12 +129,23 @@ class _ChapListState extends State<ChapList> {
                             ],
                           ),
                         ),
+                        Expanded(child: SizedBox()),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              ascended = !ascended;
+                            });
+                          },
+                          child: ascended
+                              ? Icon(Icons.arrow_downward)
+                              : Icon(Icons.arrow_upward),
+                        ),
                       ],
                     ),
                   ),
                 ),
                 Divider(),
-                for (int i = data['chapters']; i > 0; i--)
+                for (int i in range)
                   if (!(showBookmarks && !(marks.contains(i))))
                     Builder(
                       builder: (context) {
@@ -187,7 +188,6 @@ class _ChapListState extends State<ChapList> {
                               confirmDismiss: () async {
                                 toggleRead(i, lastChap);
                                 saveOrder();
-                                saveHistory(widget.id, i);
                                 if (tileContext != null) {
                                   Slidable.of(tileContext!)?.close();
                                 }
@@ -260,7 +260,6 @@ class _ChapListState extends State<ChapList> {
                                     ? theme.surface
                                     : theme.surfaceContainer,
                                 onTap: () {
-                                  saveHistory(widget.id, i);
                                   saveOrder();
 
                                   Navigator.push(

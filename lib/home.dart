@@ -15,50 +15,54 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final box = Hive.box('mybox');
-  late Map sorter;
   List data = [];
+  Map dataById = {};
+  List order = [];
 
   Future<void> loadData() async {
     final text = await rootBundle.loadString('assets/data.json');
     setState(() {
       data = jsonDecode(text);
+      dataById = {for (var e in data) e['id'] as String: e['value'] as Map};
+      order = getOrder(dataById);
     });
+  }
+
+  List getOrder(Map dataById) {
+    final savedOrder = box.get('sorting-order', defaultValue: {}) as Map;
+    // print('saved order: $savedOrder');
+    Map orderMap;
+
+    if (dataById.containsKey(savedOrder.keys)) {
+      Map newOrder = {};
+      for (var id in dataById.keys) {
+        newOrder[id] = savedOrder.containsKey(id) ? savedOrder[id] : 0;
+      }
+      box.put('sorting-order', newOrder);
+      orderMap = newOrder;
+    } else {
+      orderMap = savedOrder;
+    } // Convert everything to a comparable num before sorting
+
+    List<String> order = orderMap.keys.cast<String>().toList()
+      ..sort((a, b) => orderMap[b].compareTo(orderMap[a]));
+    return order;
   }
 
   @override
   void initState() {
     super.initState();
-    final raw = box.get('nvl-sorter', defaultValue: {}) as Map;
-    sorter = raw;
+
     loadData();
   }
 
   @override
   Widget build(BuildContext context) {
-    final dataById = {for (var e in data) e['id'] as String: e['value'] as Map};
-
     return Scaffold(
       body: ValueListenableBuilder(
         valueListenable: box.listenable(keys: ['sorting-order']),
         builder: (context, Box box, _) {
-          final saved = box.get('sorting-order', defaultValue: {}) as Map;
-          Map orderMap;
-
-          if (data.length != saved.length) {
-            Map newOrder = {};
-            for (var e in data) {
-              final id = e['id'];
-              newOrder[id] = saved.containsKey(id) ? saved[id] : 0;
-            }
-            box.put('sorting-order', newOrder);
-            orderMap = newOrder;
-          } else {
-            orderMap = saved;
-          } // Convert everything to a comparable num before sorting
-
-          List<String> order = orderMap.keys.cast<String>().toList()
-            ..sort((a, b) => orderMap[b].compareTo(orderMap[a]));
-
+          // print('order: $order');
           return Scaffold(
             body: GridView.builder(
               padding: EdgeInsets.fromLTRB(10, 10, 10, 100),
@@ -85,8 +89,13 @@ class _HomePageState extends State<HomePage> {
                     child: Column(
                       spacing: 5,
                       children: [
-                        InkWell(
-                          // borderRadius: BorderRadius.circular(10),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: BoxBorder.all(
+                              width: .5,
+                              color: Colors.white,
+                            ),
+                          ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
                             child: Image.asset(

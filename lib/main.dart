@@ -47,7 +47,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int currPage = 0;
 
-  final List<Widget> pages = [HomePage('Home'), HistoryPage()];
+  final List<Widget> pages = [HomePage('Library'), HistoryPage()];
   final List<String> titles = ['Library', 'History'];
 
   List data = [];
@@ -71,7 +71,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${titles[currPage]} ${titles[currPage] == 'Home' ? '[${data.length}]' : ''}',
+          '${titles[currPage]} ${titles[currPage] == 'Library' ? '[${data.length}]' : ''}',
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
       ),
@@ -95,7 +95,7 @@ class _MainScreenState extends State<MainScreen> {
           NavigationDestination(
             icon: Icon(Icons.collections_bookmark_outlined),
             selectedIcon: Icon(Icons.collections_bookmark),
-            label: 'Home',
+            label: 'Library',
           ),
           NavigationDestination(icon: Icon(Icons.history), label: 'History'),
         ],

@@ -26,6 +26,21 @@ class _ReadingState extends State<Reading> {
   bool read = false;
   late Map data;
   late int savedChap;
+
+  void saveHistory(String id, int chap) {
+    final history = box.get('history', defaultValue: []) as List;
+    Map hisdata = {"id": id, "chap": chap};
+
+    if (history.isNotEmpty && history.first['id'] != widget.id) {
+      history.insert(0, hisdata);
+    } else if (history.isEmpty) {
+      history.add(hisdata);
+    } else if (history.first['id'] == widget.id) {
+      history[0] = hisdata;
+    }
+    box.put('history', history);
+  }
+
   Future<void> loadChap() async {
     final text = await rootBundle.loadString(
       'assets/nvls/${widget.id}/${widget.chapter}.txt',
@@ -91,6 +106,7 @@ class _ReadingState extends State<Reading> {
     _scrollController = ScrollController();
     loadChap().then((_) => _restoreScrollPosition());
     _scrollController.addListener(_onScroll);
+    saveHistory(widget.id, widget.chapter);
   }
 
   void _restoreScrollPosition() {
@@ -101,9 +117,9 @@ class _ReadingState extends State<Reading> {
     if (savedOffset != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
-          _scrollController.jumpTo(
-            // duration: Duration(milliseconds: 1000),
-            // curve: Curves.bounceInOut,
+          _scrollController.animateTo(
+            duration: Duration(milliseconds: 300),
+            curve: Curves.bounceInOut,
             (savedOffset as double).clamp(
               0,
               _scrollController.position.maxScrollExtent,
@@ -155,11 +171,13 @@ class _ReadingState extends State<Reading> {
       appBar: AppBar(
         title: Text('Chapter ${widget.chapter} ${read ? '(Read)' : ''}'),
       ),
+
       body: Scrollbar(
         controller: _scrollController,
         thickness: 15,
         radius: Radius.circular(10),
         interactive: true,
+
         child: GestureDetector(
           onHorizontalDragEnd: (details) {
             if (details.primaryVelocity! > 0) {
@@ -168,6 +186,7 @@ class _ReadingState extends State<Reading> {
               toNextChap();
             }
           },
+
           child: SingleChildScrollView(
             controller: _scrollController,
             padding: EdgeInsets.all(16),
@@ -182,6 +201,7 @@ class _ReadingState extends State<Reading> {
                           onPressed: () {
                             saveProg();
                           },
+
                           child: savePos ? Text('Save?') : Icon(Icons.check),
                         ),
                       SizedBox(height: 100),
@@ -190,29 +210,48 @@ class _ReadingState extends State<Reading> {
           ),
         ),
       ),
+
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: .spaceAround,
           children: [
             OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
               onPressed: () {
                 toPrevChap();
               },
+
               child: Icon(Icons.chevron_left, size: 26),
             ),
             OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
               onPressed: () {
                 markChap();
               },
+
               child: Icon(
                 !marked ? Icons.bookmark_add_outlined : Icons.bookmark,
                 size: 26,
               ),
             ),
             OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
               onPressed: () {
                 toNextChap();
               },
+
               child: Icon(Icons.chevron_right, size: 26),
             ),
           ],
