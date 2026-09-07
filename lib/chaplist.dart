@@ -16,13 +16,14 @@ class _ChapListState extends State<ChapList> {
   final box = Hive.box('mybox');
   bool showBookmarks = false;
 
-  void saveOrder() {
+  Future<void> saveOrder() async {
     final raw = box.get('sorting-order', defaultValue: {}) as Map;
     Map yeah = raw;
     yeah[widget.id] = DateTime.now().millisecondsSinceEpoch;
 
-    box.put('sorting-order', yeah);
-    box.put('last-nvl', widget.id);
+    await box.put('sorting-order', yeah);
+    await box.put('last-nvl', widget.id);
+    print('saved sorting-order: ${box.get('sorting-order')}');
   }
 
   void toggleBookmark(int chap) {
@@ -43,7 +44,39 @@ class _ChapListState extends State<ChapList> {
     box.put('last-${widget.id}-chap', newLastChap);
   }
 
-  bool ascended = true;
+  Future<bool> _showConfirmation() async {
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete item?'),
+        content: const Text('This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete All'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      return true;
+    }
+    return false;
+  }
+
+  void deleteNvlData() async {
+    bool confirmation = await _showConfirmation();
+    if (confirmation) {
+      box.deleteAll(['last-${widget.id}-chap', '${widget.id}_bookmarks']);
+    }
+  }
+
+  bool ascended = false;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +88,21 @@ class _ChapListState extends State<ChapList> {
         : List<int>.generate(data['chapters'], (i) => data['chapters'] - i);
 
     return Scaffold(
-      appBar: AppBar(title: Text(nvlTitle)),
+      appBar: AppBar(
+        title: Text(nvlTitle),
+        actions: [
+          TextButton(
+            child: Icon(
+              Icons.delete_forever_outlined,
+              size: 26,
+              color: Colors.red,
+            ),
+            onPressed: () {
+              deleteNvlData();
+            },
+          ),
+        ],
+      ),
       body: ValueListenableBuilder(
         valueListenable: box.listenable(
           keys: ['last-${widget.id}-chap', '${widget.id}_bookmarks'],
@@ -79,11 +126,17 @@ class _ChapListState extends State<ChapList> {
                     mainAxisAlignment: .start,
                     crossAxisAlignment: .start,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.asset(
-                          'assets/nvls/${widget.id}/cover_${widget.id}.webp',
-                          width: 150,
+                      Container(
+                        decoration: BoxDecoration(
+                          border: BoxBorder.all(width: .5, color: Colors.white),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.asset(
+                            'assets/nvls/${widget.id}/cover_${widget.id}.webp',
+                            width: 150,
+                          ),
                         ),
                       ),
                       Expanded(
@@ -136,7 +189,7 @@ class _ChapListState extends State<ChapList> {
                               ascended = !ascended;
                             });
                           },
-                          child: ascended
+                          child: !ascended
                               ? Icon(Icons.arrow_downward)
                               : Icon(Icons.arrow_upward),
                         ),
@@ -171,7 +224,9 @@ class _ChapListState extends State<ChapList> {
                             ),
                             children: [
                               SlidableAction(
-                                onPressed: (_) => toggleBookmark(i),
+                                onPressed: (_) async {
+                                  toggleBookmark(i);
+                                },
                                 icon: isBookmarked
                                     ? Icons.bookmark_remove
                                     : Icons.bookmark_add,
@@ -187,7 +242,7 @@ class _ChapListState extends State<ChapList> {
                               dismissThreshold: .3,
                               confirmDismiss: () async {
                                 toggleRead(i, lastChap);
-                                saveOrder();
+                                await saveOrder();
                                 if (tileContext != null) {
                                   Slidable.of(tileContext!)?.close();
                                 }
@@ -197,7 +252,10 @@ class _ChapListState extends State<ChapList> {
                             ),
                             children: [
                               SlidableAction(
-                                onPressed: (_) => toggleRead(i, lastChap),
+                                onPressed: (_) async {
+                                  toggleRead(i, lastChap);
+                                  await saveOrder();
+                                },
                                 backgroundColor: isRead
                                     ? Colors.grey
                                     : Colors.green,
@@ -227,7 +285,7 @@ class _ChapListState extends State<ChapList> {
                                         fontSize: 18,
                                         color: i < lastChap
                                             ? Colors.grey
-                                            : Colors.white,
+                                            : theme.inverseSurface,
                                       ),
                                     ),
                                   ],
@@ -236,13 +294,7 @@ class _ChapListState extends State<ChapList> {
                                   children: [
                                     i < lastChap
                                         ? Text(' ')
-                                        :
-                                          // Icon(
-                                          //     Icons.,
-                                          //     color: theme.primary,
-                                          //     size: 16,
-                                          //   ),
-                                          Text(
+                                        : Text(
                                             '●',
                                             style: TextStyle(color: Colors.red),
                                           ),
@@ -253,14 +305,13 @@ class _ChapListState extends State<ChapList> {
                                     : Colors.white,
 
                                 shape: RoundedRectangleBorder(
-                                  side: BorderSide(),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 tileColor: i < lastChap
                                     ? theme.surface
                                     : theme.surfaceContainer,
-                                onTap: () {
-                                  saveOrder();
+                                onTap: () async {
+                                  await saveOrder();
 
                                   Navigator.push(
                                     context,
@@ -282,11 +333,11 @@ class _ChapListState extends State<ChapList> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        onPressed: () async {
           final lastChap1 =
               box.get('last-${widget.id}-chap', defaultValue: 1) as int;
           if (lastChap1 <= data['chapters']) {
-            saveOrder();
+            await saveOrder();
             Navigator.push(
               context,
               MaterialPageRoute(

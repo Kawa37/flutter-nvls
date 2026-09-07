@@ -18,6 +18,33 @@ class _HomePageState extends State<HomePage> {
   List data = [];
   Map dataById = {};
   List order = [];
+  bool _loading = true;
+
+  List getOrder(Map dataById) {
+    if (dataById.isEmpty) return [];
+    final savedOrder = box.get('sorting-order', defaultValue: {}) as Map;
+    print('[box.get sorting order] $savedOrder');
+
+    final needsRebuild =
+        savedOrder.length != dataById.length ||
+        !dataById.keys.every((id) => savedOrder.containsKey(id));
+
+    Map orderMap;
+    if (needsRebuild) {
+      Map newOrder = {
+        for (var id in dataById.keys)
+          id: savedOrder.containsKey(id) ? savedOrder[id] : 0,
+      };
+      box.put('sorting-order', newOrder);
+      orderMap = newOrder;
+    } else {
+      orderMap = savedOrder;
+    }
+
+    List<String> order = orderMap.keys.cast<String>().toList()
+      ..sort((a, b) => orderMap[b].compareTo(orderMap[a]));
+    return order;
+  }
 
   Future<void> loadData() async {
     final text = await rootBundle.loadString('assets/data.json');
@@ -25,28 +52,9 @@ class _HomePageState extends State<HomePage> {
       data = jsonDecode(text);
       dataById = {for (var e in data) e['id'] as String: e['value'] as Map};
       order = getOrder(dataById);
+      _loading = false;
+      print('order from load: $order');
     });
-  }
-
-  List getOrder(Map dataById) {
-    final savedOrder = box.get('sorting-order', defaultValue: {}) as Map;
-    // print('saved order: $savedOrder');
-    Map orderMap;
-
-    if (dataById.containsKey(savedOrder.keys)) {
-      Map newOrder = {};
-      for (var id in dataById.keys) {
-        newOrder[id] = savedOrder.containsKey(id) ? savedOrder[id] : 0;
-      }
-      box.put('sorting-order', newOrder);
-      orderMap = newOrder;
-    } else {
-      orderMap = savedOrder;
-    } // Convert everything to a comparable num before sorting
-
-    List<String> order = orderMap.keys.cast<String>().toList()
-      ..sort((a, b) => orderMap[b].compareTo(orderMap[a]));
-    return order;
   }
 
   @override
@@ -58,11 +66,19 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_loading || order.isEmpty) {
+      return Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Library [${dataById.length}]'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+      ),
       body: ValueListenableBuilder(
         valueListenable: box.listenable(keys: ['sorting-order']),
         builder: (context, Box box, _) {
-          // print('order: $order');
+          order = getOrder(dataById);
+          print('order from listenable: $order');
           return Scaffold(
             body: GridView.builder(
               padding: EdgeInsets.fromLTRB(10, 10, 10, 100),
@@ -91,6 +107,7 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         Container(
                           decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
                             border: BoxBorder.all(
                               width: .5,
                               color: Colors.white,

@@ -1,10 +1,10 @@
-import os
+# import os
 
-dirs = os.listdir("assets/nvls/")
+# dirs = os.listdir("assets/nvls/")
 
-paths = []
-for di in dirs:
-    paths.append(di)
+# paths = []
+# for di in dirs:
+#     paths.append(di)
 
-for i in paths:
-    print(f"- assets/nvls/{i}/")
+# for i in paths:
+#     print(f"- assets/nvls/{i}/")

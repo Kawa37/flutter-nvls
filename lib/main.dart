@@ -69,19 +69,8 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          '${titles[currPage]} ${titles[currPage] == 'Library' ? '[${data.length}]' : ''}',
-        ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
-      ),
-      body: Scrollbar(
-        thickness: 15,
-        radius: Radius.circular(10),
-        interactive: true,
-        child: Center(
-          child: IndexedStack(index: currPage, children: pages),
-        ),
+      body: Center(
+        child: IndexedStack(index: currPage, children: pages),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currPage,
