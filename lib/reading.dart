@@ -131,8 +131,8 @@ class _ReadingState extends State<Reading> {
   }
 
   void saveProg() {
-    if (saved) return;
     box.delete('${widget.id}_${widget.chapter}_scroll');
+    if (saved) return;
     box.put('last-${widget.id}-chap', widget.chapter + 1);
     setState(() {
       savePos = false;
@@ -160,7 +160,7 @@ class _ReadingState extends State<Reading> {
   @override
   void dispose() {
     _debounce?.cancel();
-    _saveScrollPosition(); // safety net on normal navigation away
+    _saveScrollPosition();
     _scrollController.dispose();
     super.dispose();
   }

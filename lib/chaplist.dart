@@ -231,6 +231,9 @@ class _ChapListState extends State<ChapList> {
                                     ? Icons.bookmark_remove
                                     : Icons.bookmark_add,
                                 label: isBookmarked ? 'Unmark' : 'Bookmark',
+                                backgroundColor: isBookmarked
+                                    ? Colors.redAccent
+                                    : Colors.white,
                               ),
                             ],
                           ),
@@ -257,8 +260,8 @@ class _ChapListState extends State<ChapList> {
                                   await saveOrder();
                                 },
                                 backgroundColor: isRead
-                                    ? Colors.grey
-                                    : Colors.green,
+                                    ? Colors.red
+                                    : Colors.white,
                                 foregroundColor: Colors.white,
                                 icon: isRead
                                     ? Icons.visibility_off

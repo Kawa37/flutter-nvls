@@ -18,9 +18,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ThemeMode themeMode = ThemeMode.system;
     return MaterialApp(
       home: MainScreen(),
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       theme: ThemeData(
         colorSchemeSeed: Colors.red,
         useMaterial3: true,

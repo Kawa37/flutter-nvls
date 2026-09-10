@@ -500,7 +500,7 @@ packages:
     source: hosted
     version: "1.9.1"
   path_provider:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: path_provider
       sha256: a7f4874f987173da295a61c181b8ee71dab59b332a486b391babf26a1b884825
@@ -603,6 +603,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.6.0"
+  shared_storage:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: HEAD
+      resolved-ref: c6735b4b08ad2676dc6761bef674d2287024e199
+      url: "https://github.com/libsrcdev/shared-storage.git"
+    source: git
+    version: "0.7.0"
   shelf:
     dependency: transitive
     description:

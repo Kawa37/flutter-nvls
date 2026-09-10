@@ -5,6 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:novels/chaplist.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'package:novels/utils.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage(this.title, {super.key});
 
@@ -16,14 +18,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final box = Hive.box('mybox');
   List data = [];
+  bool showHidden = false;
+  List hiddenNvls = [];
   Map dataById = {};
   List order = [];
+  List visibleOrder = [];
   bool _loading = true;
 
   List getOrder(Map dataById) {
     if (dataById.isEmpty) return [];
     final savedOrder = box.get('sorting-order', defaultValue: {}) as Map;
-    print('[box.get sorting order] $savedOrder');
 
     final needsRebuild =
         savedOrder.length != dataById.length ||
@@ -48,13 +52,49 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> loadData() async {
     final text = await rootBundle.loadString('assets/data.json');
+    final rawHiddenNvls = box.get('hidden-nvls', defaultValue: []) as List;
     setState(() {
       data = jsonDecode(text);
       dataById = {for (var e in data) e['id'] as String: e['value'] as Map};
       order = getOrder(dataById);
+      visibleOrder = order.where((element) {
+        if (showHidden) {
+          return hiddenNvls.contains(element) ? true : false;
+        } else if (!showHidden) {
+          return hiddenNvls.contains(element) ? false : true;
+        }
+        return true;
+      }).toList();
+      hiddenNvls = rawHiddenNvls;
       _loading = false;
-      print('order from load: $order');
+      // print('order from load: $order');
     });
+  }
+
+  void toggleHide() {
+    setState(() {
+      showHidden = !showHidden;
+      visibleOrder = order.where((element) {
+        if (showHidden) {
+          return hiddenNvls.contains(element) ? true : false;
+        } else if (!showHidden) {
+          return hiddenNvls.contains(element) ? false : true;
+        }
+        return true;
+      }).toList();
+    });
+  }
+
+  Future<void> toggleHideNvl(String id) async {
+    setState(() {
+      if (!(hiddenNvls.contains(id))) {
+        hiddenNvls.add(id);
+      } else {
+        hiddenNvls.remove(id);
+      }
+    });
+    await box.put('hidden-nvls', hiddenNvls);
+    print('hid: $id');
   }
 
   @override
@@ -67,18 +107,43 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (_loading || order.isEmpty) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: .center,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text('Loading...'),
+            ],
+          ),
+        ),
+      );
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text('Library [${dataById.length}]'),
+        title: InkWell(
+          onLongPress: () => toggleHide(),
+          child: Text(
+            '${showHidden ? 'Hidden' : 'Library'} [${visibleOrder.length}]',
+          ),
+        ),
         backgroundColor: Theme.of(context).colorScheme.surface,
       ),
       body: ValueListenableBuilder(
         valueListenable: box.listenable(keys: ['sorting-order']),
         builder: (context, Box box, _) {
           order = getOrder(dataById);
-          print('order from listenable: $order');
+          visibleOrder = order.where((element) {
+            if (showHidden) {
+              return hiddenNvls.contains(element) ? true : false;
+            } else if (!showHidden) {
+              return hiddenNvls.contains(element) ? false : true;
+            }
+            return true;
+          }).toList();
+
+          // print('order from listenable: $order');
           return Scaffold(
             body: GridView.builder(
               padding: EdgeInsets.fromLTRB(10, 10, 10, 100),
@@ -86,19 +151,27 @@ class _HomePageState extends State<HomePage> {
                 crossAxisCount: 3,
                 childAspectRatio: 0.6,
               ),
-              itemCount: order.length,
+              itemCount: visibleOrder.length,
               itemBuilder: (context, index) {
-                final String id = order[index];
+                final String id = visibleOrder[index];
                 final Map value = dataById[id]!;
 
                 return InkWell(
-                  onTap: () {
+                  onTap: () async {
                     box.put('the-last', id);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ChapList(data: dataById, id: id),
                       ),
+                    );
+                  },
+                  onLongPress: () async {
+                    await toggleHideNvl(id);
+                    await writeToSafFolder(
+                      box,
+                      'nvls.json',
+                      jsonEncode({'nvls': order}),
                     );
                   },
                   child: Card(
@@ -141,7 +214,6 @@ class _HomePageState extends State<HomePage> {
         onPressed: () {
           final id = box.get('last-nvl', defaultValue: '') as String;
           if (id.isEmpty) return;
-
           Navigator.push(
             context,
             MaterialPageRoute(
