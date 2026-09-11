@@ -86,6 +86,7 @@ class _ChapListState extends State<ChapList> {
     final range = ascended
         ? List<int>.generate(data['chapters'], (i) => i + 1)
         : List<int>.generate(data['chapters'], (i) => data['chapters'] - i);
+    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(
@@ -118,7 +119,7 @@ class _ChapListState extends State<ChapList> {
             radius: Radius.circular(10),
             interactive: true,
             child: ListView(
-              padding: EdgeInsets.only(bottom: 100),
+              padding: EdgeInsets.only(bottom: screenHeight / 2),
               children: [
                 Container(
                   padding: EdgeInsets.all(10),
@@ -156,44 +157,50 @@ class _ChapListState extends State<ChapList> {
                 SizedBox(height: 50),
                 Card(
                   margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Row(
-                      children: [
-                        Text(
-                          '${data['chapters']} chapters',
-                          style: TextStyle(fontSize: 18),
-                        ),
-                        SizedBox(width: 10),
-
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              showBookmarks = !showBookmarks;
-                            });
-                          },
-                          child: Row(
-                            children: [
-                              Icon(Icons.bookmark, color: theme.secondary),
-                              Text(
-                                '${marks.length}',
-                                style: TextStyle(fontSize: 18),
-                              ),
-                            ],
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: BoxBorder.all(width: .5, color: theme.primary),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Row(
+                        children: [
+                          Text(
+                            '${data['chapters']} chapters',
+                            style: TextStyle(fontSize: 18),
                           ),
-                        ),
-                        Expanded(child: SizedBox()),
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              ascended = !ascended;
-                            });
-                          },
-                          child: !ascended
-                              ? Icon(Icons.arrow_downward)
-                              : Icon(Icons.arrow_upward),
-                        ),
-                      ],
+                          SizedBox(width: 10),
+                          Expanded(child: SizedBox()),
+
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                showBookmarks = !showBookmarks;
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Icon(Icons.bookmark, color: theme.secondary),
+                                Text(
+                                  '${marks.length}',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                ascended = !ascended;
+                              });
+                            },
+                            child: !ascended
+                                ? Icon(Icons.arrow_downward)
+                                : Icon(Icons.arrow_upward),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

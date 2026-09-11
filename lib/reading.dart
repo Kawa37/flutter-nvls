@@ -167,6 +167,8 @@ class _ReadingState extends State<Reading> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Chapter ${widget.chapter} ${read ? '(Read)' : ''}'),
@@ -189,12 +191,17 @@ class _ReadingState extends State<Reading> {
 
           child: SingleChildScrollView(
             controller: _scrollController,
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.only(
+              right: 16,
+              left: 16,
+              top: 16,
+              bottom: screenHeight / 4,
+            ),
             child: chap == null
                 ? Center(child: CircularProgressIndicator())
                 : Column(
                     children: [
-                      Text(chap!, style: TextStyle(fontSize: 20)),
+                      SelectableText(chap!, style: TextStyle(fontSize: 20)),
                       SizedBox(height: 100),
                       if (widget.chapter < savedChap - 1)
                         FilledButton(

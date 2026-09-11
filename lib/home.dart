@@ -5,8 +5,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:novels/chaplist.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'package:novels/utils.dart';
-
 class HomePage extends StatefulWidget {
   const HomePage(this.title, {super.key});
 
@@ -123,9 +121,14 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: InkWell(
-          onLongPress: () => toggleHide(),
-          child: Text(
-            '${showHidden ? 'Hidden' : 'Library'} [${visibleOrder.length}]',
+          onDoubleTap: () => toggleHide(),
+          child: ValueListenableBuilder(
+            valueListenable: box.listenable(keys: ['sorting-order']),
+            builder: (context, Box box, _) {
+              return Text(
+                '${showHidden ? 'Hidden' : 'Library'} [${visibleOrder.length}]',
+              );
+            },
           ),
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -168,11 +171,6 @@ class _HomePageState extends State<HomePage> {
                   },
                   onLongPress: () async {
                     await toggleHideNvl(id);
-                    await writeToSafFolder(
-                      box,
-                      'nvls.json',
-                      jsonEncode({'nvls': order}),
-                    );
                   },
                   child: Card(
                     child: Column(
@@ -221,6 +219,7 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
+
         child: Icon(Icons.play_arrow),
       ),
     );
