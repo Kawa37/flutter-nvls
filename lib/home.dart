@@ -5,6 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:novels/chaplist.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'main.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage(this.title, {super.key});
 
@@ -65,7 +67,6 @@ class _HomePageState extends State<HomePage> {
       }).toList();
       hiddenNvls = rawHiddenNvls;
       _loading = false;
-      // print('order from load: $order');
     });
   }
 
@@ -120,6 +121,25 @@ class _HomePageState extends State<HomePage> {
     }
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 15),
+            child: InkWell(
+              onTap: () {
+                themeMode.value = themeMode.value == ThemeMode.light
+                    ? ThemeMode.dark
+                    : ThemeMode.light;
+              },
+
+              child: Icon(
+                themeMode.value != ThemeMode.light
+                    ? Icons.sunny
+                    : Icons.bedtime,
+                size: 26,
+              ),
+            ),
+          ),
+        ],
         title: InkWell(
           onDoubleTap: () => toggleHide(),
           child: ValueListenableBuilder(
@@ -146,7 +166,6 @@ class _HomePageState extends State<HomePage> {
             return true;
           }).toList();
 
-          // print('order from listenable: $order');
           return Scaffold(
             body: GridView.builder(
               padding: EdgeInsets.fromLTRB(10, 10, 10, 100),

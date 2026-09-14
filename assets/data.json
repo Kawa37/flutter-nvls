@@ -27,6 +27,24 @@
         }
     },
     {
+        "id": "deep_sea_embers",
+        "value": {
+            "chapters": 60,
+            "readingKey": "dse_reading",
+            "title": "Deep Sea Embers",
+            "description": ""
+        }
+    },
+    {
+        "id": "ending_maker",
+        "value": {
+            "chapters": 11,
+            "readingKey": "em_reading",
+            "title": "Ending Maker",
+            "description": ""
+        }
+    },
+    {
         "id": "i_am_the_heroine's_master",
         "value": {
             "chapters": 10,
@@ -45,11 +63,38 @@
         }
     },
     {
+        "id": "i_only_love_my_greatest_enemy",
+        "value": {
+            "chapters": 10,
+            "readingKey": "iolmge_reading",
+            "title": "I Only Love My Greatest Enemy",
+            "description": ""
+        }
+    },
+    {
+        "id": "kidnapped_dragons",
+        "value": {
+            "chapters": 12,
+            "readingKey": "kd_reading",
+            "title": "Kidnapped Dragons",
+            "description": ""
+        }
+    },
+    {
         "id": "leaving_a_legacy",
         "value": {
             "chapters": 10,
             "readingKey": "lal_reading",
             "title": "Leaving A Legacy",
+            "description": ""
+        }
+    },
+    {
+        "id": "magical_girl_gunslinger",
+        "value": {
+            "chapters": 10,
+            "readingKey": "mgg_reading",
+            "title": "Magical Girl Gunslinger",
             "description": ""
         }
     },
@@ -110,10 +155,19 @@
     {
         "id": "shadow_slave",
         "value": {
-            "chapters": 1400,
+            "chapters": 1600,
             "readingKey": "ss_reading",
             "title": "Shadow Slave",
             "description": "Ranks:\n\n1. Dormant Dormant Beast\n\n2. Awakened Awakened Monster\n\n3. Ascended Fallen Demon\n\n4. Transcendent Corrupted Devil\n\n5. Supreme Great Tyrant\n\n6. Sacred Cursed Terror\n\n7. Divine UnBoly Titan"
+        }
+    },
+    {
+        "id": "super_minion",
+        "value": {
+            "chapters": 10,
+            "readingKey": "sm_reading",
+            "title": "Super Minion",
+            "description": ""
         }
     },
     {
@@ -158,6 +212,15 @@
             "chapters": 10,
             "readingKey": "tscog_reading",
             "title": "The Second Coming Of Gluttony",
+            "description": ""
+        }
+    },
+    {
+        "id": "the_world_of_otome_games_is_tough_for_mobs",
+        "value": {
+            "chapters": 10,
+            "readingKey": "twoogitfm_reading",
+            "title": "The World Of Otome Games Is Tough For Mobs",
             "description": ""
         }
     },

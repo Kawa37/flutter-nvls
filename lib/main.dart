@@ -6,6 +6,10 @@ import 'package:novels/home.dart';
 import 'package:novels/history.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+final ValueNotifier<ThemeMode> themeMode = ValueNotifier<ThemeMode>(
+  ThemeMode.dark,
+);
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
@@ -18,22 +22,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ThemeMode themeMode = ThemeMode.system;
-    return MaterialApp(
-      home: MainScreen(),
-      themeMode: themeMode,
-      theme: ThemeData(
-        colorSchemeSeed: Colors.red,
-        useMaterial3: true,
-        brightness: Brightness.light,
-        fontFamily: 'JetBrainsMono',
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: Colors.red,
-        fontFamily: 'JetBrainsMono',
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
+    return ValueListenableBuilder(
+      valueListenable: themeMode,
+      builder: (context, currMode, child) {
+        return MaterialApp(
+          home: MainScreen(),
+          themeMode: currMode,
+          theme: ThemeData(
+            colorSchemeSeed: Colors.red,
+            useMaterial3: true,
+            brightness: Brightness.light,
+            fontFamily: 'JetBrainsMono',
+          ),
+          darkTheme: ThemeData(
+            colorSchemeSeed: Colors.red,
+            fontFamily: 'JetBrainsMono',
+            brightness: Brightness.dark,
+            useMaterial3: true,
+          ),
+        );
+      },
     );
   }
 }
@@ -47,6 +55,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int currPage = 0;
+  final box = Hive.box('mybox');
 
   final List<Widget> pages = [HomePage('Library'), HistoryPage()];
   final List<String> titles = ['Library', 'History'];
@@ -75,7 +84,6 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currPage,
-
         onDestinationSelected: (index) {
           setState(() {
             currPage = index;
