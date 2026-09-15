@@ -1,11 +1,49 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:novels/chaplist.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:permission_handler/permission_handler.dart';
+
+import 'dart:io';
 
 import 'main.dart';
+
+Future<bool> requestStoragePermission() async {
+  if (await Permission.manageExternalStorage.isGranted) {
+    return true;
+  }
+
+  var status = await Permission.manageExternalStorage.request();
+  if (status.isGranted) return true;
+
+  status = await Permission.storage.request();
+  return status.isGranted;
+}
+
+Future<Directory> getFolder() async {
+  final folder = Directory('/storage/emulated/0/Novels');
+  if (!await folder.exists()) {
+    await folder.create(recursive: true);
+  }
+
+  return folder;
+}
+
+Future<void> writeFile(String filename, String data) async {
+  final folder = await getFolder();
+  final file = File('${folder.path}/$filename');
+  await file.writeAsString(data, mode: FileMode.write);
+}
+
+Future<String> readFile(String filename) async {
+  final folder = await getFolder();
+  final file = File('${folder.path}/$filename');
+  if (!await file.exists()) return '';
+  return await file.readAsString();
+}
 
 class HomePage extends StatefulWidget {
   const HomePage(this.title, {super.key});
@@ -24,6 +62,7 @@ class _HomePageState extends State<HomePage> {
   List order = [];
   List visibleOrder = [];
   bool _loading = true;
+  bool isExtended = true;
 
   List getOrder(Map dataById) {
     if (dataById.isEmpty) return [];
@@ -68,9 +107,26 @@ class _HomePageState extends State<HomePage> {
       hiddenNvls = rawHiddenNvls;
       _loading = false;
     });
+    await saveData(dataById);
+  }
+
+  bool isDataSaved = false;
+  Future<void> saveData(Map data) async {
+    final int today = int.parse('${DateTime.now().day}${DateTime.now().hour}');
+    final lastTimeSaved =
+        box.get('last-file-save-date', defaultValue: 0) as int;
+
+    if (today - lastTimeSaved >= 6) {
+      await writeFile('data.txt', data.toString());
+      print('saved data');
+      setState(() => isDataSaved = true);
+    } else {
+      setState(() => isDataSaved = true);
+    }
   }
 
   void toggleHide() {
+    print('${DateTime.now().day}${DateTime.now().hour}');
     setState(() {
       showHidden = !showHidden;
       visibleOrder = order.where((element) {
@@ -93,7 +149,6 @@ class _HomePageState extends State<HomePage> {
       }
     });
     await box.put('hidden-nvls', hiddenNvls);
-    print('hid: $id');
   }
 
   @override
@@ -105,7 +160,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading || order.isEmpty) {
+    if (_loading || order.isEmpty || !isDataSaved) {
       return Scaffold(
         body: Center(
           child: Column(
@@ -119,24 +174,21 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     }
+
     return Scaffold(
       appBar: AppBar(
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 15),
-            child: InkWell(
-              onTap: () {
-                themeMode.value = themeMode.value == ThemeMode.light
-                    ? ThemeMode.dark
-                    : ThemeMode.light;
-              },
+          TextButton(
+            onPressed: () async {
+              themeMode.value = themeMode.value == ThemeMode.light
+                  ? ThemeMode.dark
+                  : ThemeMode.light;
+              box.put('theme', themeMode.value == ThemeMode.dark ? 0 : 1);
+            },
 
-              child: Icon(
-                themeMode.value != ThemeMode.light
-                    ? Icons.sunny
-                    : Icons.bedtime,
-                size: 26,
-              ),
+            child: Icon(
+              themeMode.value != ThemeMode.light ? Icons.sunny : Icons.bedtime,
+              size: 26,
             ),
           ),
         ],
@@ -166,8 +218,16 @@ class _HomePageState extends State<HomePage> {
             return true;
           }).toList();
 
-          return Scaffold(
-            body: GridView.builder(
+          return NotificationListener<UserScrollNotification>(
+            onNotification: (noti) {
+              if (noti.direction == ScrollDirection.forward) {
+                if (!isExtended) setState(() => isExtended = true);
+              } else if (noti.direction == ScrollDirection.reverse) {
+                if (isExtended) setState(() => isExtended = false);
+              }
+              return true;
+            },
+            child: GridView.builder(
               padding: EdgeInsets.fromLTRB(10, 10, 10, 100),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
@@ -227,7 +287,7 @@ class _HomePageState extends State<HomePage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           final id = box.get('last-nvl', defaultValue: '') as String;
           if (id.isEmpty) return;
@@ -239,7 +299,9 @@ class _HomePageState extends State<HomePage> {
           );
         },
 
-        child: Icon(Icons.play_arrow),
+        icon: Icon(Icons.play_arrow),
+        label: Text('Continue', style: TextStyle(fontSize: 18)),
+        isExtended: isExtended,
       ),
     );
   }

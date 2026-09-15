@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
           home: MainScreen(),
           themeMode: currMode,
           theme: ThemeData(
-            colorSchemeSeed: Colors.red,
+            colorSchemeSeed: Colors.deepPurple,
             useMaterial3: true,
             brightness: Brightness.light,
             fontFamily: 'JetBrainsMono',
@@ -67,6 +67,9 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       data = jsonDecode(rawData);
     });
+    themeMode.value = box.get('theme', defaultValue: 0) == 0
+        ? ThemeMode.dark
+        : ThemeMode.light;
   }
 
   @override
@@ -84,6 +87,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currPage,
+        indicatorColor: Theme.of(context).colorScheme.primaryContainer,
         onDestinationSelected: (index) {
           setState(() {
             currPage = index;
@@ -92,10 +96,24 @@ class _MainScreenState extends State<MainScreen> {
         destinations: [
           NavigationDestination(
             icon: Icon(Icons.collections_bookmark_outlined),
-            selectedIcon: Icon(Icons.collections_bookmark),
+            selectedIcon: Icon(
+              Icons.collections_bookmark,
+              color: themeMode.value == ThemeMode.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
             label: 'Library',
           ),
-          NavigationDestination(icon: Icon(Icons.history), label: 'History'),
+          NavigationDestination(
+            icon: Icon(Icons.history),
+            selectedIcon: Icon(
+              Icons.history,
+              color: themeMode.value == ThemeMode.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
+            label: 'History',
+          ),
         ],
       ),
     );
