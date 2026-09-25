@@ -9,17 +9,16 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'dart:io';
 
-import 'main.dart';
-
 Future<bool> requestStoragePermission() async {
+  if (!Platform.isAndroid) {
+    return true;
+  }
+
   if (await Permission.manageExternalStorage.isGranted) {
     return true;
   }
 
   var status = await Permission.manageExternalStorage.request();
-  if (status.isGranted) return true;
-
-  status = await Permission.storage.request();
   return status.isGranted;
 }
 
@@ -32,10 +31,16 @@ Future<Directory> getFolder() async {
   return folder;
 }
 
-Future<void> writeFile(String filename, String data) async {
+Future<void> writeFile(String filename, data, bool json) async {
   final folder = await getFolder();
   final file = File('${folder.path}/$filename');
-  await file.writeAsString(data, mode: FileMode.write);
+
+  if (!json) {
+    await file.writeAsString(data, mode: FileMode.write);
+  } else {
+    String prettyJson = JsonEncoder.withIndent(' ').convert(data);
+    await file.writeAsString(prettyJson, mode: FileMode.write);
+  }
 }
 
 Future<String> readFile(String filename) async {
@@ -60,9 +65,18 @@ class _HomePageState extends State<HomePage> {
   List hiddenNvls = [];
   Map dataById = {};
   List order = [];
+  List selectedNvls = [];
   List visibleOrder = [];
   bool _loading = true;
   bool isExtended = true;
+  Future<void> checkPermission() async {
+    final storagePermission =
+        box.get('storage-permission', defaultValue: false) as bool;
+    if (!storagePermission) {
+      bool requestStat = await requestStoragePermission();
+      if (requestStat) box.put('storage-permission', true);
+    }
+  }
 
   List getOrder(Map dataById) {
     if (dataById.isEmpty) return [];
@@ -107,26 +121,22 @@ class _HomePageState extends State<HomePage> {
       hiddenNvls = rawHiddenNvls;
       _loading = false;
     });
-    await saveData(dataById);
+    try {
+      await saveData(dataById);
+    } catch (e) {
+      debugPrint('perission error: $e');
+    }
   }
 
   bool isDataSaved = false;
   Future<void> saveData(Map data) async {
-    final int today = int.parse('${DateTime.now().day}${DateTime.now().hour}');
-    final lastTimeSaved =
-        box.get('last-file-save-date', defaultValue: 0) as int;
+    final allData = {'novels': data};
 
-    if (today - lastTimeSaved >= 6) {
-      await writeFile('data.txt', data.toString());
-      print('saved data');
-      setState(() => isDataSaved = true);
-    } else {
-      setState(() => isDataSaved = true);
-    }
+    await writeFile('data.json', allData, true);
+    setState(() => isDataSaved = true);
   }
 
   void toggleHide() {
-    print('${DateTime.now().day}${DateTime.now().hour}');
     setState(() {
       showHidden = !showHidden;
       visibleOrder = order.where((element) {
@@ -151,23 +161,34 @@ class _HomePageState extends State<HomePage> {
     await box.put('hidden-nvls', hiddenNvls);
   }
 
+  List toggleSelect(String id, List selected) {
+    List res = selected;
+    if (selected.contains(id)) {
+      res.remove(id);
+    } else {
+      res.add(id);
+    }
+    return res;
+  }
+
   @override
   void initState() {
     super.initState();
 
+    checkPermission();
     loadData();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading || order.isEmpty || !isDataSaved) {
+    if (_loading || order.isEmpty) {
       return Scaffold(
         body: Center(
           child: Column(
             mainAxisAlignment: .center,
             children: [
               CircularProgressIndicator(),
-              SizedBox(width: 20),
+              SizedBox(height: 20),
               Text('Loading...'),
             ],
           ),
@@ -177,29 +198,42 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        actions: [
-          TextButton(
-            onPressed: () async {
-              themeMode.value = themeMode.value == ThemeMode.light
-                  ? ThemeMode.dark
-                  : ThemeMode.light;
-              box.put('theme', themeMode.value == ThemeMode.dark ? 0 : 1);
-            },
-
-            child: Icon(
-              themeMode.value != ThemeMode.light ? Icons.sunny : Icons.bedtime,
-              size: 26,
-            ),
-          ),
-        ],
         title: InkWell(
           onDoubleTap: () => toggleHide(),
           child: ValueListenableBuilder(
             valueListenable: box.listenable(keys: ['sorting-order']),
             builder: (context, Box box, _) {
-              return Text(
-                '${showHidden ? 'Hidden' : 'Library'} [${visibleOrder.length}]',
-              );
+              return selectedNvls.isEmpty
+                  ? Text(
+                      '${showHidden ? 'Hidden' : 'Library'} [${visibleOrder.length}]',
+                    )
+                  : Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.close),
+                          onPressed: () {
+                            setState(() => selectedNvls = []);
+                          },
+                        ),
+                        Text('${selectedNvls.length}'),
+                        Expanded(child: SizedBox()),
+                        IconButton(
+                          onPressed: () async {
+                            for (var i in selectedNvls) {
+                              await toggleHideNvl(i);
+                            }
+                            selectedNvls = [];
+                          },
+                          icon: Icon(Icons.visibility_off_outlined),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() => selectedNvls = visibleOrder);
+                          },
+                          icon: Icon(Icons.select_all),
+                        ),
+                      ],
+                    );
             },
           ),
         ),
@@ -217,6 +251,12 @@ class _HomePageState extends State<HomePage> {
             }
             return true;
           }).toList();
+
+          if (visibleOrder.isEmpty) {
+            return Center(
+              child: Text('No ${showHidden ? 'Hiddens' : 'Novels'}'),
+            );
+          }
 
           return NotificationListener<UserScrollNotification>(
             onNotification: (noti) {
@@ -237,9 +277,16 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 final String id = visibleOrder[index];
                 final Map value = dataById[id]!;
+                bool isSelect = selectedNvls.contains(id);
 
                 return InkWell(
                   onTap: () async {
+                    if (selectedNvls.isNotEmpty) {
+                      setState(() {
+                        selectedNvls = toggleSelect(id, selectedNvls);
+                      });
+                      return;
+                    }
                     box.put('the-last', id);
                     Navigator.push(
                       context,
@@ -248,37 +295,41 @@ class _HomePageState extends State<HomePage> {
                       ),
                     );
                   },
-                  onLongPress: () async {
-                    await toggleHideNvl(id);
+                  onLongPress: () {
+                    setState(() {
+                      selectedNvls = toggleSelect(id, selectedNvls);
+                    });
                   },
                   child: Card(
-                    child: Column(
-                      spacing: 5,
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            border: BoxBorder.all(
-                              width: .5,
-                              color: Colors.white,
-                            ),
-                          ),
-                          child: ClipRRect(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: isSelect
+                            ? BoxBorder.all(color: Colors.red, width: 2)
+                            : Border.all(color: Colors.white, width: .5),
+                        color: isSelect
+                            ? Colors.red.withValues(alpha: 0.2)
+                            : Colors.transparent,
+                      ),
+                      child: Column(
+                        spacing: 5,
+                        children: [
+                          ClipRRect(
                             borderRadius: BorderRadius.circular(10),
                             child: Image.asset(
                               'assets/nvls/$id/cover_$id.webp',
                             ),
                           ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
-                          child: Text(
-                            value['title'],
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
+                          Container(
+                            padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                            child: Text(
+                              value['title'],
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 );
@@ -300,7 +351,7 @@ class _HomePageState extends State<HomePage> {
         },
 
         icon: Icon(Icons.play_arrow),
-        label: Text('Continue', style: TextStyle(fontSize: 18)),
+        label: Text('Continue'),
         isExtended: isExtended,
       ),
     );

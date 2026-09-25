@@ -201,7 +201,14 @@ class _ReadingState extends State<Reading> {
                 ? Center(child: CircularProgressIndicator())
                 : Column(
                     children: [
-                      SelectableText(chap!, style: TextStyle(fontSize: 20)),
+                      SelectableText(
+                        chap!,
+                        style: TextStyle(
+                          fontSize: 20,
+                          // backgroundColor: Theme.of(context) .colorScheme
+                          //     .surface,
+                        ),
+                      ),
                       SizedBox(height: 100),
                       if (widget.chapter < savedChap - 1)
                         FilledButton(
@@ -225,7 +232,7 @@ class _ReadingState extends State<Reading> {
             OutlinedButton(
               style: OutlinedButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               onPressed: () {
@@ -237,7 +244,7 @@ class _ReadingState extends State<Reading> {
             OutlinedButton(
               style: OutlinedButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               onPressed: () {
@@ -252,7 +259,7 @@ class _ReadingState extends State<Reading> {
             OutlinedButton(
               style: OutlinedButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
               onPressed: () {

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:novels/home.dart';
 import 'package:novels/history.dart';
+import 'package:novels/settings.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:novels/reading.dart';
 
 final ValueNotifier<ThemeMode> themeMode = ValueNotifier<ThemeMode>(
   ThemeMode.dark,
@@ -57,8 +59,8 @@ class _MainScreenState extends State<MainScreen> {
   int currPage = 0;
   final box = Hive.box('mybox');
 
-  final List<Widget> pages = [HomePage('Library'), HistoryPage()];
-  final List<String> titles = ['Library', 'History'];
+  final List<Widget> pages = [HomePage('Library'), HistoryPage(), Settings()];
+  final List<String> titles = ['Library', 'History', 'Settings'];
 
   List data = [];
 
@@ -67,9 +69,10 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       data = jsonDecode(rawData);
     });
-    themeMode.value = box.get('theme', defaultValue: 0) == 0
+    final themeRaw = box.get('theme', defaultValue: 0) == 0
         ? ThemeMode.dark
         : ThemeMode.light;
+    themeMode.value = themeRaw;
   }
 
   @override
@@ -81,17 +84,38 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final PageController pageController = PageController();
     return Scaffold(
-      body: Center(
-        child: IndexedStack(index: currPage, children: pages),
+      body: PageView(
+        onPageChanged: (value) => setState(() => currPage = value),
+        controller: pageController,
+        children: pages,
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: currPage,
         indicatorColor: Theme.of(context).colorScheme.primaryContainer,
         onDestinationSelected: (index) {
-          setState(() {
-            currPage = index;
-          });
+          final his = box.get('history', defaultValue: []) as List;
+          final id = his.first['id'];
+          final chap = his.first['chap'];
+          if (currPage == index && index == 1) {
+            print('dbl');
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => Reading(id: id, chapter: chap),
+              ),
+            );
+          } else if (currPage == index && index == 2) {
+            themeMode.value = themeMode.value == ThemeMode.dark
+                ? ThemeMode.light
+                : ThemeMode.dark;
+          } else {
+            setState(() {
+              currPage = index;
+            });
+            pageController.jumpToPage(index);
+          }
         },
         destinations: [
           NavigationDestination(
@@ -113,6 +137,16 @@ class _MainScreenState extends State<MainScreen> {
                   : Colors.black,
             ),
             label: 'History',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.settings_outlined),
+            selectedIcon: Icon(
+              Icons.settings,
+              color: themeMode.value == ThemeMode.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
+            label: 'Settings',
           ),
         ],
       ),
