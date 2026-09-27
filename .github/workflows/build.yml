@@ -26,6 +26,18 @@ jobs:
             - name: Dependencies laden
               run: flutter pub get
 
+            - name: Decode Keystore
+              run: |
+                  mkdir -p android/app
+                  echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/key.jks
+
+            - name: Create key.properties
+              run: |
+                  echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/app/key.properties
+                  echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/app/key.properties
+                  echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/app/key.properties
+                  echo "storeFile=key.jks" >> android/app/key.properties
+
             - name: APK bauen (Split per ABI)
               run: flutter build apk --release --split-per-abi
 
@@ -34,7 +46,7 @@ jobs:
               with:
                   artifacts: "build/app/outputs/apk/release/*"
                   tag: "v0.5.0"
-                  name: "Novels v0.5.0"
+                  name: "App v0.5.0"
                   allowUpdates: true
                   overwrite: true
                   token: ${{ secrets.TOKEN }}
