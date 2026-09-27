@@ -17,6 +17,7 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('mybox');
 
+  final box = Hive.box('mybox');
   final int rawTheme = box.get('theme', defaultValue: 0);
   final initTheme = rawTheme==0?ThemeMode.dark : ThemeMode.light;
 
