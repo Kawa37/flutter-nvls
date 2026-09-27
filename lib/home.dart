@@ -7,6 +7,8 @@ import 'package:novels/chaplist.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:permission_handler/permission_handler.dart';
 
+import 'utils.dart';
+
 import 'dart:io';
 
 Future<bool> requestStoragePermission() async {
@@ -69,6 +71,7 @@ class _HomePageState extends State<HomePage> {
   List visibleOrder = [];
   bool _loading = true;
   bool isExtended = true;
+
   Future<void> checkPermission() async {
     final storagePermission =
         box.get('storage-permission', defaultValue: false) as bool;
@@ -176,6 +179,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     checkPermission();
+    backupData();
     loadData();
   }
 

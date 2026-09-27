@@ -19,7 +19,8 @@ void main() async {
 
   final box = Hive.box('mybox');
   final int rawTheme = box.get('theme', defaultValue: 0);
-  final initTheme = rawTheme==0?ThemeMode.dark : ThemeMode.light;
+  final initTheme = rawTheme == 0 ? ThemeMode.dark : ThemeMode.light;
+  themeMode.value = initTheme;
 
   runApp(MyApp());
 }
@@ -97,9 +98,9 @@ class _MainScreenState extends State<MainScreen> {
         indicatorColor: Theme.of(context).colorScheme.primaryContainer,
         onDestinationSelected: (index) {
           final his = box.get('history', defaultValue: []) as List;
-          final id = his.first['id'];
-          final chap = his.first['chap'];
-          if (currPage == index && index == 1) {
+          if (currPage == index && index == 1 && his.isNotEmpty) {
+            final id = his.first['id'];
+            final chap = his.first['chap'];
             print('dbl');
             Navigator.push(
               context,
@@ -107,10 +108,12 @@ class _MainScreenState extends State<MainScreen> {
                 builder: (context) => Reading(id: id, chapter: chap),
               ),
             );
-          } else if (currPage == index && index == 2) {
+          }
+          if (currPage == index && index == 2) {
             themeMode.value = themeMode.value == ThemeMode.dark
                 ? ThemeMode.light
                 : ThemeMode.dark;
+            box.put('theme', themeMode.value == ThemeMode.dark ? 0 : 1);
           } else {
             setState(() {
               currPage = index;

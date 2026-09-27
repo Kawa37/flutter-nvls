@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'utils.dart';
+
 import 'main.dart';
 
 class Settings extends StatefulWidget {
@@ -12,8 +14,12 @@ class Settings extends StatefulWidget {
 
 class _SettingsState extends State<Settings> {
   final box = Hive.box('mybox');
+  bool loading = false;
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return Scaffold(body: Center(child: Text('Loading...')));
+    }
     return Scaffold(
       appBar: AppBar(title: Text('Settings')),
       body: Padding(
@@ -45,6 +51,22 @@ class _SettingsState extends State<Settings> {
                           color: Theme.of(context).colorScheme.primary,
                           size: 26,
                         ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  InkWell(
+                    onTap: () async {
+                      setState(() => loading = true);
+                      await restoreData();
+                      setState(() => loading = false);
+                    },
+                    child: Row(
+                      children: [
+                        Text('Restore data'),
+                        Expanded(child: SizedBox()),
+
+                        Icon(Icons.download),
                       ],
                     ),
                   ),
