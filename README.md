@@ -1,28 +1,28 @@
 # Novels (flutter-nvls)
 
-A Flutter Android app for reading a personal, bundled library of novels/light novels — offline, chapter by chapter, with reading progress, bookmarks, and history tracking.
+A Flutter Android app for reading a personal, bundled library of novels/light novels - offline, chapter by chapter, with reading progress, bookmarks, and history tracking.
 
 ## Features
 
-- **Library grid** — browse your novel collection as cover-art cards, reorderable by "last opened."
-- **Continue reading** — floating action button jumps straight back into the last-read novel.
-- **Chapter reader** — scrollable text view with:
+- **Library grid** - browse your novel collection as cover-art cards, reorderable by "last opened."
+- **Continue reading** - floating action button jumps straight back into the last-read novel.
+- **Chapter reader** - scrollable text view with:
   - Automatic scroll-position saving/restoring per chapter
   - Auto-marks a chapter "read" once you scroll to the end
   - Bookmarking individual chapters
   - Swipe left/right to move between chapters
-- **History** — list of recently read novels with quick resume, and a "delete all" action.
-- **Hide/unhide novels** — multi-select novels in the library to hide them from the main view (double-tap the title to toggle the hidden view).
+- **History** - list of recently read novels with quick resume, and a "delete all" action.
+- **Hide/unhide novels** - multi-select novels in the library to hide them from the main view (double-tap the title to toggle the hidden view).
 - **Light/Dark theme** toggle, persisted across launches.
-- **Local storage** — reading progress, bookmarks, history, and sort order are persisted with [Hive](https://pub.dev/packages/hive); the app also mirrors novel metadata to `/storage/emulated/0/Novels/data.json` on the device (requires storage permission on Android).
+- **Local storage** - reading progress, bookmarks, history, and sort order are persisted with [Hive](https://pub.dev/packages/hive); the app also mirrors novel metadata to `/storage/emulated/0/Novels/data.json` on the device (requires storage permission on Android).
 
 ## Tech Stack
 
 - **Flutter** (Dart SDK `^3.13.1`)
-- **Hive** / **hive_flutter** — local NoSQL key-value storage
-- **permission_handler** — Android storage permissions
-- **flutter_slidable**, **expandable_text** — UI components
-- **flutter_launcher_icons** — custom app icon generation
+- **Hive** / **hive_flutter** - local NoSQL key-value storage
+- **permission_handler** - Android storage permissions
+- **flutter_slidable**, **expandable_text** - UI components
+- **flutter_launcher_icons** - custom app icon generation
 
 ## Project Structure
 
