@@ -1,37 +1,40 @@
 name: Build Flutter APK
 
 on:
-  push:
-    branches: [ master ]
+    push:
+        branches: [master]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Code auschecken
-        uses: actions/checkout@v4
+        steps:
+            - name: Code auschecken
+              uses: actions/checkout@v4
 
-      - name: Java einrichten
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+            - name: Java einrichten
+              uses: actions/setup-java@v4
+              with:
+                  distribution: "temurin"
+                  java-version: "17"
 
-      - name: Flutter einrichten
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
+            - name: Flutter einrichten
+              uses: subosito/flutter-action@v2
+              with:
+                  channel: "stable"
 
-      - name: Dependencies laden
-        run: flutter pub get
+            - name: Dependencies laden
+              run: flutter pub get
 
-      - name: APK bauen (Split per ABI)
-        run: flutter build apk --release --split-per-abi
+            - name: APK bauen (Split per ABI)
+              run: flutter build apk --release --split-per-abi
 
-      - name: Als Release veröffentlichen
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "build/app/outputs/apk/release/*"
-          tag: "v1.0.${{ github.run_number }}"
-          token: ${{ secrets.TOKEN }}
+            - name: Als Release veröffentlichen
+              uses: ncipollo/release-action@v1
+              with:
+                  artifacts: "build/app/outputs/apk/release/*"
+                  tag: "v0.5.0"
+                  name: "App v1.0.0"
+                  allowUpdates: true
+                  overwrite: true
+                  token: ${{ secrets.TOKEN }}
