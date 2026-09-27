@@ -16,6 +16,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   await Hive.openBox('mybox');
+
+  final int rawTheme = box.get('theme', defaultValue: 0);
+  final initTheme = rawTheme==0?ThemeMode.dark : ThemeMode.light;
+
   runApp(MyApp());
 }
 
@@ -69,10 +73,6 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       data = jsonDecode(rawData);
     });
-    final themeRaw = box.get('theme', defaultValue: 0) == 0
-        ? ThemeMode.dark
-        : ThemeMode.light;
-    themeMode.value = themeRaw;
   }
 
   @override
