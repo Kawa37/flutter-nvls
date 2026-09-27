@@ -34,7 +34,7 @@ jobs:
               with:
                   artifacts: "build/app/outputs/apk/release/*"
                   tag: "v0.5.0"
-                  name: "App v1.0.0"
+                  name: "Novels v0.5.0"
                   allowUpdates: true
                   overwrite: true
                   token: ${{ secrets.TOKEN }}
