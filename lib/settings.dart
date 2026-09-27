@@ -18,7 +18,17 @@ class _SettingsState extends State<Settings> {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return Scaffold(body: Center(child: Text('Loading...')));
+      return Scaffold(
+        body: Center(
+          child: Column(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 20),
+              Text('Loading...'),
+            ],
+          ),
+        ),
+      );
     }
     return Scaffold(
       appBar: AppBar(title: Text('Settings')),
