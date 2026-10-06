@@ -156,17 +156,23 @@ class _ChapListState extends State<ChapList> {
                 padding: EdgeInsets.only(bottom: screenHeight / 2),
                 children: [
                   Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: theme.surfaceContainer,
+                      // border: BoxBorder.all(width: .5, color: theme.primary),
+                    ),
                     padding: EdgeInsets.all(10),
+                    margin: EdgeInsets.all(10),
                     child: Row(
                       mainAxisAlignment: .start,
                       crossAxisAlignment: .start,
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            border: BoxBorder.all(
-                              width: .5,
-                              color: Colors.white,
-                            ),
+                            // border: BoxBorder.all(
+                            //   width: .5,
+                            //   color: Colors.white,
+                            // ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: ClipRRect(
@@ -210,9 +216,10 @@ class _ChapListState extends State<ChapList> {
                   SizedBox(height: 50),
                   Card(
                     margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
+
                     child: Container(
                       decoration: BoxDecoration(
-                        border: BoxBorder.all(width: .5, color: theme.primary),
+                        // border: BoxBorder.all(width: .5, color: theme.primary),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Padding(
@@ -226,13 +233,13 @@ class _ChapListState extends State<ChapList> {
                             SizedBox(width: 10),
                             Expanded(child: SizedBox()),
 
-                            TextButton(
+                            IconButton(
                               onPressed: () {
                                 setState(() {
                                   showBookmarks = !showBookmarks;
                                 });
                               },
-                              child: Row(
+                              icon: Row(
                                 children: [
                                   Icon(Icons.bookmark, color: theme.secondary),
                                   Text(
@@ -242,13 +249,13 @@ class _ChapListState extends State<ChapList> {
                                 ],
                               ),
                             ),
-                            TextButton(
+                            IconButton(
                               onPressed: () {
                                 setState(() {
                                   ascended = !ascended;
                                 });
                               },
-                              child: !ascended
+                              icon: !ascended
                                   ? Icon(Icons.arrow_downward)
                                   : Icon(Icons.arrow_upward),
                             ),
@@ -257,6 +264,7 @@ class _ChapListState extends State<ChapList> {
                       ),
                     ),
                   ),
+
                   Divider(),
                   if (range.isEmpty) Center(child: Text('No Chapters')),
                   if (range.isNotEmpty)
@@ -349,9 +357,7 @@ class _ChapListState extends State<ChapList> {
 
                                           style: TextStyle(
                                             fontSize: 18,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface,
+                                            color: theme.onSurface,
                                           ),
                                         ),
                                       ],
@@ -361,14 +367,13 @@ class _ChapListState extends State<ChapList> {
                                         : Text(
                                             '●',
                                             style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .primary,
+                                              color: theme.primary,
                                             ),
                                           ),
                                     textColor: i < lastChap
                                         ? Colors.grey[600]
                                         : Colors.white,
+                                    tileColor: Colors.transparent,
 
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(10),

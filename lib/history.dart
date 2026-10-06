@@ -74,10 +74,11 @@ class _HistoryState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text('History'),
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: theme.surface,
         actions: [
           TextButton(
             child: Icon(
@@ -98,30 +99,38 @@ class _HistoryState extends State<HistoryPage> {
               valueListenable: box.listenable(keys: ['history']),
               builder: (context, Box box, child) {
                 history = box.get('history', defaultValue: []) as List;
-                return ListView.builder(
-                  itemCount: history.length,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(width: .5),
-                      ),
-                      tileColor: Theme.of(context).colorScheme.surfaceContainer,
-                      title: Text(data[history[index]['id']]['title']),
-                      subtitle: Text(history[index]['chap'].toString()),
-                      onTap: () async {
-                        String id = history[index]['id'];
-                        int chap = history[index]['chap'];
-                        await saveOrder(id);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                Reading(id: id, chapter: chap),
+                return Padding(
+                  padding: const EdgeInsets.only(right: 10, left: 10, top: 10),
+                  child: ListView.builder(
+                    itemCount: history.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 5),
+                        child: ListTile(
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(width: .5, color: theme.primary),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                        );
-                      },
-                    );
-                  },
+
+                          tileColor: Colors.transparent,
+                          title: Text(data[history[index]['id']]['title']),
+                          subtitle: Text(history[index]['chap'].toString()),
+                          onTap: () async {
+                            String id = history[index]['id'];
+                            int chap = history[index]['chap'];
+                            await saveOrder(id);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    Reading(id: id, chapter: chap),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
             ),

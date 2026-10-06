@@ -48,14 +48,15 @@ Future<void> writeFile(String filename, data, bool json) async {
 Future<String> readFile(String filename) async {
   final folder = await getFolder();
   final file = File('${folder.path}/$filename');
+
   if (!await file.exists()) return '';
   return await file.readAsString();
 }
 
 class HomePage extends StatefulWidget {
+  final String title;
   const HomePage(this.title, {super.key});
 
-  final String title;
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -133,9 +134,8 @@ class _HomePageState extends State<HomePage> {
 
   bool isDataSaved = false;
   Future<void> saveData(Map data) async {
-    final allData = {'novels': data};
+    // final allData = {'novels': data};
 
-    await writeFile('data.json', allData, true);
     setState(() => isDataSaved = true);
   }
 
@@ -305,12 +305,16 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
                   child: Card(
+                    // color: Theme.of(context).colorScheme.surface,
+                    color: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    surfaceTintColor: Colors.transparent,
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        border: isSelect
-                            ? BoxBorder.all(color: Colors.red, width: 2)
-                            : Border.all(color: Colors.white, width: .5),
+                        // border: isSelect
+                        //     ? BoxBorder.all(color: Colors.red, width: 2)
+                        //     : Border.all(color: Colors.white, width: .5),
                         color: isSelect
                             ? Colors.red.withValues(alpha: 0.2)
                             : Colors.transparent,

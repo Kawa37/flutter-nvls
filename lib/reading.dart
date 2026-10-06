@@ -169,106 +169,112 @@ class _ReadingState extends State<Reading> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Chapter ${widget.chapter} ${read ? '(Read)' : ''}'),
+    final base = Theme.of(context);
+    return Theme(
+      data: base.copyWith(
+        textTheme: base.textTheme.apply(fontFamily: 'Libron'),
       ),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Chapter ${widget.chapter} ${read ? '(Read)' : ''}'),
+        ),
 
-      body: Scrollbar(
-        controller: _scrollController,
-        thickness: 15,
-        radius: Radius.circular(10),
-        interactive: true,
+        body: Scrollbar(
+          controller: _scrollController,
+          thickness: 15,
+          radius: Radius.circular(10),
+          interactive: true,
 
-        child: GestureDetector(
-          onHorizontalDragEnd: (details) {
-            if (details.primaryVelocity! > 0) {
-              toPrevChap();
-            } else if (details.primaryVelocity! < 0) {
-              toNextChap();
-            }
-          },
+          child: GestureDetector(
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity! > 0) {
+                toPrevChap();
+              } else if (details.primaryVelocity! < 0) {
+                toNextChap();
+              }
+            },
 
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            padding: EdgeInsets.only(
-              right: 16,
-              left: 16,
-              top: 16,
-              bottom: screenHeight / 4,
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              padding: EdgeInsets.only(
+                right: 16,
+                left: 16,
+                top: 16,
+                bottom: screenHeight / 4,
+              ),
+              child: chap == null
+                  ? Center(child: CircularProgressIndicator())
+                  : Column(
+                      children: [
+                        SelectableText(
+                          chap!,
+                          style: TextStyle(
+                            fontSize: 20,
+                            backgroundColor: Colors.transparent,
+                            fontFamily: 'Libron',
+                          ),
+                        ),
+                        SizedBox(height: 100),
+                        if (widget.chapter < savedChap - 1)
+                          FilledButton(
+                            onPressed: () {
+                              saveProg();
+                            },
+
+                            child: savePos ? Text('Save?') : Icon(Icons.check),
+                          ),
+                        SizedBox(height: 100),
+                      ],
+                    ),
             ),
-            child: chap == null
-                ? Center(child: CircularProgressIndicator())
-                : Column(
-                    children: [
-                      SelectableText(
-                        chap!,
-                        style: TextStyle(
-                          fontSize: 20,
-                          // backgroundColor: Theme.of(context) .colorScheme
-                          //     .surface,
-                        ),
-                      ),
-                      SizedBox(height: 100),
-                      if (widget.chapter < savedChap - 1)
-                        FilledButton(
-                          onPressed: () {
-                            saveProg();
-                          },
-
-                          child: savePos ? Text('Save?') : Icon(Icons.check),
-                        ),
-                      SizedBox(height: 100),
-                    ],
-                  ),
           ),
         ),
-      ),
 
-      bottomNavigationBar: BottomAppBar(
-        child: Row(
-          mainAxisAlignment: .spaceAround,
-          children: [
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+        bottomNavigationBar: BottomAppBar(
+          child: Row(
+            mainAxisAlignment: .spaceAround,
+            children: [
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () {
+                  toPrevChap();
+                },
+
+                child: Icon(Icons.chevron_left, size: 26),
+              ),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: () {
+                  markChap();
+                },
+
+                child: Icon(
+                  !marked ? Icons.bookmark_add_outlined : Icons.bookmark,
+                  size: 26,
                 ),
               ),
-              onPressed: () {
-                toPrevChap();
-              },
-
-              child: Icon(Icons.chevron_left, size: 26),
-            ),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
-              ),
-              onPressed: () {
-                markChap();
-              },
+                onPressed: () {
+                  toNextChap();
+                },
 
-              child: Icon(
-                !marked ? Icons.bookmark_add_outlined : Icons.bookmark,
-                size: 26,
+                child: Icon(Icons.chevron_right, size: 26),
               ),
-            ),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () {
-                toNextChap();
-              },
-
-              child: Icon(Icons.chevron_right, size: 26),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

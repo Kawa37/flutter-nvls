@@ -15,6 +15,19 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
   final box = Hive.box('mybox');
   bool loading = false;
+  Map colors = {
+    'amber': Colors.amber,
+    'red': Colors.red,
+    'blue': Colors.blue,
+    "purple": Colors.purple,
+    'orange': Colors.orange,
+    'lime': Colors.lime,
+    'teal': Colors.teal,
+    'green': Colors.green,
+  };
+
+  void changeThemeColor(MaterialColor color) {}
+
   @override
   Widget build(BuildContext context) {
     if (loading) {
@@ -41,6 +54,34 @@ class _SettingsState extends State<Settings> {
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 children: [
+                  Text('Theme'),
+                  SizedBox(height: 10),
+                  Expanded(
+                    child: GridView.builder(
+                      itemCount: colors.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        childAspectRatio: 1.2,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                      ),
+                      itemBuilder: (context, idx) {
+                        final i = colors.keys.toList()[idx];
+                        return FilledButton(
+                          onPressed: () {
+                            themeColor.value = colors[i];
+                            box.put('color', i);
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: colors[i],
+                          ),
+
+                          child: Text(i),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 30),
                   InkWell(
                     onTap: () {
                       themeMode.value = themeMode.value == ThemeMode.light
@@ -64,7 +105,7 @@ class _SettingsState extends State<Settings> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 30),
                   InkWell(
                     onTap: () async {
                       setState(() => loading = true);
@@ -80,6 +121,7 @@ class _SettingsState extends State<Settings> {
                       ],
                     ),
                   ),
+                  SizedBox(height: 30),
                 ],
               ),
             );

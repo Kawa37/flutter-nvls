@@ -35,8 +35,8 @@ jobs:
               uses: ncipollo/release-action@v1
               with:
                   artifacts: "build/app/outputs/apk/release/*"
-                  tag: "v0.5.0"
-                  name: "App v0.5.0"
+                  tag: "v0.0.1"
+                  name: "App v0.0.1"
                   allowUpdates: true
                   overwrite: true
                   token: ${{ secrets.TOKEN }}

@@ -8,8 +8,22 @@ import 'package:novels/settings.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:novels/reading.dart';
 
+Map colors = {
+  'amber': Colors.amber,
+  'red': Colors.red,
+  'blue': Colors.blue,
+  "purple": Colors.purple,
+  'orange': Colors.orange,
+  'lime': Colors.lime,
+  'teal': Colors.teal,
+  'green': Colors.green,
+};
+
 final ValueNotifier<ThemeMode> themeMode = ValueNotifier<ThemeMode>(
   ThemeMode.dark,
+);
+final ValueNotifier<MaterialColor> themeColor = ValueNotifier<MaterialColor>(
+  Colors.red,
 );
 
 void main() async {
@@ -18,9 +32,13 @@ void main() async {
   await Hive.openBox('mybox');
 
   final box = Hive.box('mybox');
+
   final int rawTheme = box.get('theme', defaultValue: 0);
   final initTheme = rawTheme == 0 ? ThemeMode.dark : ThemeMode.light;
   themeMode.value = initTheme;
+
+  final String rawColor = box.get('color', defaultValue: 'red');
+  themeColor.value = colors[rawColor] ?? 'red';
 
   runApp(MyApp());
 }
@@ -30,24 +48,28 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: themeMode,
-      builder: (context, currMode, child) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([themeColor, themeMode]),
+      builder: (context, child) {
+        final currMode = themeMode.value;
+        final currColor = themeColor.value;
+        final font = 'Literata'; //JetBrainsMono
         return MaterialApp(
           home: MainScreen(),
           themeMode: currMode,
           theme: ThemeData(
-            colorSchemeSeed: Colors.deepPurple,
+            colorSchemeSeed: currColor,
             useMaterial3: true,
             brightness: Brightness.light,
-            fontFamily: 'JetBrainsMono',
+            fontFamily: font,
           ),
           darkTheme: ThemeData(
-            colorSchemeSeed: Colors.red,
-            fontFamily: 'JetBrainsMono',
+            colorSchemeSeed: currColor,
+            // fontFamily: 'JetBrainsMono',
+            fontFamily: font,
             brightness: Brightness.dark,
             useMaterial3: true,
-          ),
+          ).copyWith(scaffoldBackgroundColor: Colors.black),
         );
       },
     );
