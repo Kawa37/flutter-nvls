@@ -15,18 +15,6 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
   final box = Hive.box('mybox');
   bool loading = false;
-  Map colors = {
-    'amber': Colors.amber,
-    'red': Colors.red,
-    'blue': Colors.blue,
-    "purple": Colors.purple,
-    'orange': Colors.orange,
-    'lime': Colors.lime,
-    'teal': Colors.teal,
-    'green': Colors.green,
-  };
-
-  void changeThemeColor(MaterialColor color) {}
 
   @override
   Widget build(BuildContext context) {
@@ -54,33 +42,62 @@ class _SettingsState extends State<Settings> {
               padding: const EdgeInsets.all(10.0),
               child: Column(
                 children: [
+                  // theme selection
                   Text('Theme'),
                   SizedBox(height: 10),
-                  Expanded(
-                    child: GridView.builder(
-                      itemCount: colors.length,
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 4,
-                        childAspectRatio: 1.2,
-                        mainAxisSpacing: 8,
-                        crossAxisSpacing: 8,
-                      ),
-                      itemBuilder: (context, idx) {
-                        final i = colors.keys.toList()[idx];
-                        return FilledButton(
-                          onPressed: () {
-                            themeColor.value = colors[i];
-                            box.put('color', i);
-                          },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: colors[i],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (var color in colors.keys.toList())
+                          Row(
+                            children: [
+                              FilledButton(
+                                onPressed: () {
+                                  themeColor.value = colors[color];
+                                  box.put('color', color);
+                                },
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: colors[color],
+                                ),
+                                child: Text(color),
+                              ),
+                              SizedBox(width: 10),
+                            ],
                           ),
-
-                          child: Text(i),
-                        );
-                      },
+                      ],
                     ),
                   ),
+
+                  // fonts selection
+                  SizedBox(height: 30),
+                  Text('Fonts'),
+                  SizedBox(height: 10),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        for (var fontS in fonts)
+                          Row(
+                            children: [
+                              OutlinedButton(
+                                onPressed: () {
+                                  font.value = fontS;
+                                  box.put('default-font', fontS);
+                                },
+                                child: Text(
+                                  fontS,
+                                  style: TextStyle(fontFamily: fontS),
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // light mode
                   SizedBox(height: 30),
                   InkWell(
                     onTap: () {
@@ -105,6 +122,8 @@ class _SettingsState extends State<Settings> {
                       ],
                     ),
                   ),
+
+                  // restore data
                   SizedBox(height: 30),
                   InkWell(
                     onTap: () async {
@@ -121,7 +140,6 @@ class _SettingsState extends State<Settings> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 30),
                 ],
               ),
             );
