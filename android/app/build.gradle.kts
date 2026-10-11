@@ -31,15 +31,13 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            manifestPlaceholders["appName"] = "Novels"
         }
         debug {
-            // installs as a separate app (e.g. com.yourapp.package.debug)
-            // so `flutter run` never touches your release app's data
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
+            manifestPlaceholders["appName"] = "Novels (Debug)"
         }
     }
 }

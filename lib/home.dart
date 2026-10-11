@@ -9,6 +9,7 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'utils.dart';
 
+import 'dart:developer';
 import 'dart:io';
 
 Future<bool> requestStoragePermission() async {
@@ -185,6 +186,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
+
     if (_loading || order.isEmpty) {
       return Scaffold(
         body: Center(
@@ -209,7 +212,7 @@ class _HomePageState extends State<HomePage> {
             builder: (context, Box box, _) {
               return selectedNvls.isEmpty
                   ? Text(
-                      '${showHidden ? 'Hidden' : 'Library'} [${visibleOrder.length}]',
+                      '${showHidden ? 'Hidden' : 'Library'} ${visibleOrder.length}',
                     )
                   : Row(
                       children: [
@@ -228,7 +231,9 @@ class _HomePageState extends State<HomePage> {
                             }
                             selectedNvls = [];
                           },
-                          icon: Icon(Icons.visibility_off_outlined),
+                          icon: showHidden
+                              ? Icon(Icons.visibility_rounded)
+                              : Icon(Icons.visibility_off_outlined),
                         ),
                         IconButton(
                           onPressed: () {
@@ -241,7 +246,7 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ),
-        backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: theme.surface,
       ),
       body: ValueListenableBuilder(
         valueListenable: box.listenable(keys: ['sorting-order']),
@@ -305,18 +310,17 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
                   child: Card(
-                    // color: Theme.of(context).colorScheme.surface,
                     color: Colors.transparent,
                     shadowColor: Colors.transparent,
                     surfaceTintColor: Colors.transparent,
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        // border: isSelect
-                        //     ? BoxBorder.all(color: Colors.red, width: 2)
-                        //     : Border.all(color: Colors.white, width: .5),
+                        border: isSelect
+                            ? Border.all(color: theme.primary, width: 2)
+                            : null,
                         color: isSelect
-                            ? Colors.red.withValues(alpha: 0.2)
+                            ? theme.primary.withValues(alpha: 0.25)
                             : Colors.transparent,
                       ),
                       child: Column(

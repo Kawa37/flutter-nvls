@@ -19,7 +19,6 @@ Map colors = {
   'Green': Colors.green,
   'Indigo': Colors.indigo,
   'Pink': Colors.pink,
-  'Transparent': Colors.transparent,
 };
 
 List<String> fonts = ['JetBrainsMono', 'Libron', 'Literata', 'FiraCode'];
@@ -61,6 +60,16 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  ColorScheme _scheme(Color color, Brightness brightness) {
+    return ColorScheme.fromSeed(
+      seedColor: color,
+      brightness: brightness,
+    ).copyWith(
+      primary: color, // added: forces primary to be exactly your chosen color
+      // onPrimary: Colors.white, // optional: uncomment if text on primary looks unreadable
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -73,17 +82,15 @@ class MyApp extends StatelessWidget {
           home: MainScreen(),
           themeMode: currMode,
           theme: ThemeData(
-            colorSchemeSeed: currColor,
+            colorScheme: _scheme(currColor, Brightness.light),
             useMaterial3: true,
-            brightness: Brightness.light,
             fontFamily: fontS,
           ),
           darkTheme: ThemeData(
-            colorSchemeSeed: currColor,
+            colorScheme: _scheme(currColor, Brightness.dark),
             fontFamily: fontS,
-            brightness: Brightness.dark,
             useMaterial3: true,
-          ).copyWith(scaffoldBackgroundColor: Colors.black),
+          ),
         );
       },
     );

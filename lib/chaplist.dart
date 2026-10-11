@@ -107,6 +107,7 @@ class _ChapListState extends State<ChapList> {
     final range = ascended
         ? List<int>.generate(data['chapters'], (i) => i + 1)
         : List<int>.generate(data['chapters'], (i) => data['chapters'] - i);
+
     final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -266,7 +267,9 @@ class _ChapListState extends State<ChapList> {
                   ),
 
                   Divider(),
-                  if (range.isEmpty) Center(child: Text('No Chapters')),
+
+                  if (range.isEmpty || (showBookmarks && marks.isEmpty))
+                    Center(child: Text('No Chapters')),
                   if (range.isNotEmpty)
                     for (int i in range)
                       if (!(showBookmarks && !(marks.contains(i))))
@@ -357,7 +360,9 @@ class _ChapListState extends State<ChapList> {
 
                                           style: TextStyle(
                                             fontSize: 18,
-                                            color: theme.onSurface,
+                                            color: isRead
+                                                ? Colors.grey[20]
+                                                : theme.onSurface,
                                           ),
                                         ),
                                       ],
