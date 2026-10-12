@@ -206,8 +206,6 @@ class _ReadingState extends State<Reading> {
                         style: TextStyle(
                           fontSize: 20,
                           backgroundColor: Colors.transparent,
-                          fontFamily: 'Libron',
-                        ),
                       ),
                       SizedBox(height: 100),
                       if (widget.chapter < savedChap - 1)
