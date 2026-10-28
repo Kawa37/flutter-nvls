@@ -66,7 +66,7 @@ class _SettingsState extends State<Settings> {
                               FilledButton(
                                 onPressed: () {
                                   themeColor.value = colors[color];
-                                  setPref('color', color);
+                                  setPref('theme_color', color);
                                 },
                                 style: FilledButton.styleFrom(
                                   backgroundColor: colors[color],
@@ -151,26 +151,7 @@ class _SettingsState extends State<Settings> {
                       ],
                     ),
                   ),
-                  FilledButton(
-                    onPressed: () async {
-                      if (box.containsKey('novels')) return;
-
-                      final data = await rootBundle.loadString(
-                        'assets/data.json',
-                      );
-                      await writeFile('backup-1.json', box.toMap(), true);
-
-                      final Map newData = transfer(
-                        box.toMap(),
-                        jsonDecode(data),
-                      );
-                      if (newData.isEmpty) return;
-
-                      await box.clear();
-                      await box.putAll(newData);
-                    },
-                    child: Text('change database'),
-                  ),
+                  // FilledButton( //   onPressed: () async { //     if (box.containsKey('novels')) return; //     final data = await rootBundle.loadString( //       'assets/data.json', //     ); //     await writeFile('backup-1.json', box.toMap(), true); //     final Map newData = transfer( //       box.toMap(), //       jsonDecode(data), //     ); //     if (newData.isEmpty) return; //     await box.clear(); //     await box.putAll(newData); //   }, //   child: Text('change database'), // ),
                 ],
               ),
             );
