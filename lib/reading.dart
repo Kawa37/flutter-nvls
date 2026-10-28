@@ -220,8 +220,6 @@ class _ReadingState extends State<Reading> {
                         style: TextStyle(
                           fontSize: 20,
                           backgroundColor: Colors.transparent,
-                          fontFamily: 'Libron',
-                        ),
                       ),
                       SizedBox(height: 100),
                       if (widget.chapter < savedChap - 1)
@@ -243,44 +241,29 @@ class _ReadingState extends State<Reading> {
         child: Row(
           mainAxisAlignment: .spaceAround,
           children: [
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+            IconButton(
               onPressed: () {
                 toPrevChap();
               },
 
-              child: Icon(Icons.chevron_left, size: 26),
+              icon: Icon(Icons.chevron_left, size: 26),
             ),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+            IconButton(
               onPressed: () {
                 markChap();
               },
 
-              child: Icon(
+              icon: Icon(
                 !marked ? Icons.bookmark_add_outlined : Icons.bookmark,
                 size: 26,
               ),
             ),
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
+            IconButton(
               onPressed: () {
                 toNextChap();
               },
 
-              child: Icon(Icons.chevron_right, size: 26),
+              icon: Icon(Icons.chevron_right, size: 26),
             ),
           ],
         ),
