@@ -27,6 +27,11 @@ class _ReadingState extends State<Reading> {
   late Map data;
   late int savedChap;
 
+  Map curNovel(Map allNovels) => allNovels.putIfAbsent(
+    widget.id,
+    () => {'scroll': {}, 'bookmarks': [], 'last_chap': 1},
+  );
+
   void saveHistory(String id, int chap) {
     final history = box.get('history', defaultValue: []) as List;
     Map hisdata = {"id": id, "chap": chap};
@@ -47,9 +52,10 @@ class _ReadingState extends State<Reading> {
     );
     final rawData =
         jsonDecode(await rootBundle.loadString('assets/data.json')) as List;
-    final rawMarks =
-        box.get('${widget.id}_bookmarks', defaultValue: []) as List;
-    savedChap = box.get('last-${widget.id}-chap', defaultValue: 1) as int;
+    final novel = curNovel(box.get('novels', defaultValue: {}) as Map);
+    final rawMarks = novel['bookmarks'] as List;
+
+    savedChap = novel['last_chap'] as int;
     setState(() {
       data = {for (var e in rawData) e['id'] as String: e['value'] as Map};
       read = widget.chapter < savedChap;
@@ -96,7 +102,9 @@ class _ReadingState extends State<Reading> {
       marks.remove(widget.chapter);
       marked = false;
     });
-    box.put('${widget.id}_bookmarks', marks);
+    final allNovels = box.get('novels', defaultValue: {}) as Map;
+    curNovel(allNovels)['bookmarks'] = marks;
+    box.put('novels', allNovels);
   }
 
   @override
@@ -110,10 +118,9 @@ class _ReadingState extends State<Reading> {
   }
 
   void _restoreScrollPosition() {
-    final savedOffset = box.get(
-      '${widget.id}_${widget.chapter}_scroll',
-      defaultValue: null,
-    );
+    final novel = curNovel(box.get('novels', defaultValue: {}) as Map);
+
+    final savedOffset = novel['scroll']['${widget.chapter}'];
     if (savedOffset != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_scrollController.hasClients) {
@@ -131,9 +138,13 @@ class _ReadingState extends State<Reading> {
   }
 
   void saveProg() {
-    box.delete('${widget.id}_${widget.chapter}_scroll');
-    if (saved) return;
-    box.put('last-${widget.id}-chap', widget.chapter + 1);
+    final allNovels = box.get('novels', defaultValue: {}) as Map;
+    final novel = curNovel(allNovels);
+
+    novel['scroll'].remove('${widget.chapter}');
+    if (!saved) novel['last_chap'] = widget.chapter + 1;
+    box.put('novels', allNovels);
+
     setState(() {
       savePos = false;
       saved = true;
@@ -154,7 +165,10 @@ class _ReadingState extends State<Reading> {
   void _saveScrollPosition() {
     if (!savePos) return;
     if (!_scrollController.hasClients) return;
-    box.put('${widget.id}_${widget.chapter}_scroll', _scrollController.offset);
+    final allNovels = box.get('novels', defaultValue: {}) as Map;
+    curNovel(allNovels)['scroll']['${widget.chapter}'] =
+        _scrollController.offset;
+    box.put('novels', allNovels);
   }
 
   @override

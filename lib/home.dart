@@ -9,7 +9,6 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'utils.dart';
 
-import 'dart:developer';
 import 'dart:io';
 
 Future<bool> requestStoragePermission() async {
@@ -75,17 +74,22 @@ class _HomePageState extends State<HomePage> {
   bool isExtended = true;
 
   Future<void> checkPermission() async {
-    final storagePermission =
-        box.get('storage-permission', defaultValue: false) as bool;
+    Map prefs = box.get('prefs', defaultValue: {}) as Map;
+    final storagePermission = (prefs['storage_permission'] ?? false) as bool;
+
     if (!storagePermission) {
       bool requestStat = await requestStoragePermission();
-      if (requestStat) box.put('storage-permission', true);
+      if (requestStat) {
+        prefs['storage_permission'] = true;
+        box.put('prefs', prefs);
+      }
     }
   }
 
   List getOrder(Map dataById) {
     if (dataById.isEmpty) return [];
-    final savedOrder = box.get('sorting-order', defaultValue: {}) as Map;
+    Map prefs = box.get('prefs', defaultValue: {}) as Map;
+    final savedOrder = prefs['sorting_order'] ?? {};
 
     final needsRebuild =
         savedOrder.length != dataById.length ||
@@ -97,7 +101,8 @@ class _HomePageState extends State<HomePage> {
         for (var id in dataById.keys)
           id: savedOrder.containsKey(id) ? savedOrder[id] : 0,
       };
-      box.put('sorting-order', newOrder);
+      prefs['sorting_order'] = newOrder;
+      box.put('prefs', prefs);
       orderMap = newOrder;
     } else {
       orderMap = savedOrder;
@@ -110,7 +115,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> loadData() async {
     final text = await rootBundle.loadString('assets/data.json');
-    final rawHiddenNvls = box.get('hidden-nvls', defaultValue: []) as List;
+    final rawHiddenNvls = box.get('hidden_novels', defaultValue: []) as List;
     setState(() {
       data = jsonDecode(text);
       dataById = {for (var e in data) e['id'] as String: e['value'] as Map};
@@ -135,8 +140,7 @@ class _HomePageState extends State<HomePage> {
 
   bool isDataSaved = false;
   Future<void> saveData(Map data) async {
-    // final allData = {'novels': data};
-
+    await writeFile('backup.json', box.toMap(), true);
     setState(() => isDataSaved = true);
   }
 
@@ -162,7 +166,7 @@ class _HomePageState extends State<HomePage> {
         hiddenNvls.remove(id);
       }
     });
-    await box.put('hidden-nvls', hiddenNvls);
+    await box.put('hidden_novels', hiddenNvls);
   }
 
   List toggleSelect(String id, List selected) {
@@ -208,7 +212,7 @@ class _HomePageState extends State<HomePage> {
         title: InkWell(
           onDoubleTap: () => toggleHide(),
           child: ValueListenableBuilder(
-            valueListenable: box.listenable(keys: ['sorting-order']),
+            valueListenable: box.listenable(keys: ['prefs']),
             builder: (context, Box box, _) {
               return selectedNvls.isEmpty
                   ? Text(
@@ -249,7 +253,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: theme.surface,
       ),
       body: ValueListenableBuilder(
-        valueListenable: box.listenable(keys: ['sorting-order']),
+        valueListenable: box.listenable(keys: ['prefs']),
         builder: (context, Box box, _) {
           order = getOrder(dataById);
           visibleOrder = order.where((element) {
@@ -296,7 +300,6 @@ class _HomePageState extends State<HomePage> {
                       });
                       return;
                     }
-                    box.put('the-last', id);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -352,7 +355,8 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          final id = box.get('last-nvl', defaultValue: '') as String;
+          final prefs = box.get('prefs', defaultValue: {}) as Map;
+          final id = prefs['last_novel'] ?? '';
           if (id.isEmpty) return;
           Navigator.push(
             context,

@@ -1,9 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:novels/home.dart';
+
+import 'package:flutter/services.dart' show rootBundle;
 
 import 'utils.dart';
-
 import 'main.dart';
+import 'change_data_base.dart';
 
 class Settings extends StatefulWidget {
   const Settings({super.key});
@@ -15,6 +20,12 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
   final box = Hive.box('mybox');
   bool loading = false;
+
+  void setPref(String key, dynamic value) {
+    final prefs = box.get('prefs', defaultValue: {}) as Map;
+    prefs[key] = value;
+    box.put('prefs', prefs);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +66,7 @@ class _SettingsState extends State<Settings> {
                               FilledButton(
                                 onPressed: () {
                                   themeColor.value = colors[color];
-                                  box.put('color', color);
+                                  setPref('color', color);
                                 },
                                 style: FilledButton.styleFrom(
                                   backgroundColor: colors[color],
@@ -83,7 +94,7 @@ class _SettingsState extends State<Settings> {
                               OutlinedButton(
                                 onPressed: () {
                                   font.value = fontS;
-                                  box.put('default-font', fontS);
+                                  setPref('default_font', fontS);
                                 },
                                 child: Text(
                                   fontS,
@@ -104,8 +115,8 @@ class _SettingsState extends State<Settings> {
                       themeMode.value = themeMode.value == ThemeMode.light
                           ? ThemeMode.dark
                           : ThemeMode.light;
-                      box.put(
-                        'theme',
+                      setPref(
+                        'theme_color',
                         themeMode.value == ThemeMode.dark ? 0 : 1,
                       );
                     },
@@ -139,6 +150,26 @@ class _SettingsState extends State<Settings> {
                         Icon(Icons.download),
                       ],
                     ),
+                  ),
+                  FilledButton(
+                    onPressed: () async {
+                      if (box.containsKey('novels')) return;
+
+                      final data = await rootBundle.loadString(
+                        'assets/data.json',
+                      );
+                      await writeFile('backup-1.json', box.toMap(), true);
+
+                      final Map newData = transfer(
+                        box.toMap(),
+                        jsonDecode(data),
+                      );
+                      if (newData.isEmpty) return;
+
+                      await box.clear();
+                      await box.putAll(newData);
+                    },
+                    child: Text('change database'),
                   ),
                 ],
               ),

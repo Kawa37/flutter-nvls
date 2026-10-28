@@ -23,31 +23,42 @@ class _ChapListState extends State<ChapList> {
   bool isExtended = true;
   String description = '0';
 
+  Map curNovel(Map allNovels) => allNovels.putIfAbsent(
+    widget.id,
+    () => {'scroll': {}, 'bookmarks': [], 'last_chap': 1},
+  );
+
   Future<void> saveOrder() async {
-    final raw = box.get('sorting-order', defaultValue: {}) as Map;
+    final prefs = box.get('prefs', defaultValue: {});
+    final raw = prefs['sorting_order'] ?? {};
     Map yeah = raw;
     yeah[widget.id] = DateTime.now().millisecondsSinceEpoch;
 
-    await box.put('sorting-order', yeah);
-    await box.put('last-nvl', widget.id);
+    prefs['sorting_order'] = yeah;
+    prefs['last_novel'] = widget.id;
+    await box.put('prefs', prefs);
   }
 
   void toggleBookmark(int chap) {
-    final marks = box.get('${widget.id}_bookmarks', defaultValue: []) as List;
+    Map allNovels = box.get('novels', defaultValue: {}) as Map;
+    final marks = curNovel(allNovels)['bookmarks'];
     if (marks.contains(chap)) {
       marks.remove(chap);
     } else {
       marks.add(chap);
     }
-    box.put('${widget.id}_bookmarks', marks);
+    box.put('novels', allNovels);
   }
 
   void toggleRead(int chap, int lastChap) {
+    Map allNovels = box.get('novels', defaultValue: {}) as Map;
+    final novel = curNovel(allNovels);
     final bool isRead = chap < lastChap;
     final newLastChap = isRead ? chap : chap + 1;
 
-    box.delete('${widget.id}_${chap}_scroll');
-    box.put('last-${widget.id}-chap', newLastChap);
+    novel['scroll'].remove('$chap');
+    novel['last_chap'] = newLastChap;
+    box.put('novels', allNovels);
   }
 
   Future<bool> _showConfirmation() async {
@@ -78,14 +89,19 @@ class _ChapListState extends State<ChapList> {
   void deleteNvlData() async {
     bool confirmation = await _showConfirmation();
     if (confirmation) {
-      box.deleteAll(['last-${widget.id}-chap', '${widget.id}_bookmarks']);
+      final allNovels = box.get('novels', defaultValue: {}) as Map;
+      final novel = curNovel(allNovels);
+      novel['last_chap'] = 1;
+      novel['bookmarks'] = [];
+      novel['scroll'] = {};
+      box.put('novels', allNovels);
     }
   }
 
   Future<void> _getDesc() async {
     final rawDescription = await rootBundle.loadString('assets/data.json');
 
-    List desc = jsonDecode(rawDescription); //[widget.id]['description'];
+    List desc = jsonDecode(rawDescription);
     final dbid = {for (var e in desc) e['id']: e['value']};
     setState(() => description = dbid[widget.id]['description']);
   }
@@ -100,7 +116,9 @@ class _ChapListState extends State<ChapList> {
 
   @override
   Widget build(BuildContext context) {
-    var lastChap = box.get('last-${widget.id}-chap', defaultValue: 1) as int;
+    var lastChap =
+        curNovel(box.get('novels', defaultValue: {}) as Map)['last_chap']
+            as int;
     final theme = Theme.of(context).colorScheme;
     final Map data = widget.data[widget.id];
     final String nvlTitle = data['title'];
@@ -127,13 +145,11 @@ class _ChapListState extends State<ChapList> {
         ],
       ),
       body: ValueListenableBuilder(
-        valueListenable: box.listenable(
-          keys: ['last-${widget.id}-chap', '${widget.id}_bookmarks'],
-        ),
+        valueListenable: box.listenable(keys: ['novels']),
         builder: (context, Box box, _) {
-          lastChap = box.get('last-${widget.id}-chap', defaultValue: 1) as int;
-          final marks =
-              box.get('${widget.id}_bookmarks', defaultValue: []) as List;
+          final novel = curNovel(box.get('novels', defaultValue: {}) as Map);
+          lastChap = novel['last_chap'] as int;
+          final marks = novel['bookmarks'] as List;
 
           if (description == '0') {
             return Center(child: CircularProgressIndicator());
@@ -160,7 +176,6 @@ class _ChapListState extends State<ChapList> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
                       color: theme.surfaceContainer,
-                      // border: BoxBorder.all(width: .5, color: theme.primary),
                     ),
                     padding: EdgeInsets.all(10),
                     margin: EdgeInsets.all(10),
@@ -170,10 +185,6 @@ class _ChapListState extends State<ChapList> {
                       children: [
                         Container(
                           decoration: BoxDecoration(
-                            // border: BoxBorder.all(
-                            //   width: .5,
-                            //   color: Colors.white,
-                            // ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: ClipRRect(
@@ -220,7 +231,6 @@ class _ChapListState extends State<ChapList> {
 
                     child: Container(
                       decoration: BoxDecoration(
-                        // border: BoxBorder.all(width: .5, color: theme.primary),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Padding(
@@ -411,7 +421,9 @@ class _ChapListState extends State<ChapList> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final lastChap1 =
-              box.get('last-${widget.id}-chap', defaultValue: 1) as int;
+              curNovel(box.get('novels', defaultValue: {}) as Map)['last_chap']
+                  as int;
+
           if (lastChap1 <= data['chapters']) {
             await saveOrder();
             Navigator.push(

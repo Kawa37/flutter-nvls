@@ -58,12 +58,14 @@ class _HistoryState extends State<HistoryPage> {
   }
 
   Future<void> saveOrder(String id) async {
-    final raw = box.get('sorting-order', defaultValue: {}) as Map;
+    final prefs = box.get('prefs', defaultValue: {}) as Map;
+    final raw = prefs['sorting_order'] ?? {};
     Map yeah = raw;
     yeah[id] = DateTime.now().millisecondsSinceEpoch;
 
-    await box.put('sorting-order', yeah);
-    await box.put('last-nvl', id);
+    prefs['sorting_order'] = yeah;
+    prefs['last_novel'] = id;
+    await box.put('prefs', prefs);
   }
 
   @override

@@ -34,15 +34,15 @@ final ValueNotifier<MaterialColor> themeColor = ValueNotifier<MaterialColor>(
 final ValueNotifier<String> font = ValueNotifier<String>('JetBrainsMono');
 
 void getAll(Box box) {
-  final int rawTheme = box.get('theme', defaultValue: 0);
+  Map prefs = box.get('prefs', defaultValue: {});
+  final int rawTheme = prefs['theme'] ?? 0;
   final initTheme = rawTheme == 0 ? ThemeMode.dark : ThemeMode.light;
   themeMode.value = initTheme;
 
-  final String rawColor = box.get('color', defaultValue: 'red');
+  final String rawColor = prefs['theme_color'] ?? 'Red';
   themeColor.value = colors[rawColor] ?? Colors.red;
 
-  final rawFont =
-      box.get('default-font', defaultValue: 'JetBrainsMono') as String;
+  final rawFont = prefs['default_font'] ?? 'JetBrainsMono';
   font.value = rawFont;
 }
 
@@ -172,7 +172,9 @@ class _MainScreenState extends State<MainScreen> {
               themeMode.value = themeMode.value == ThemeMode.dark
                   ? ThemeMode.light
                   : ThemeMode.dark;
-              box.put('theme', themeMode.value == ThemeMode.dark ? 0 : 1);
+              Map prefs = box.get('prefs', defaultValue: {});
+              prefs['theme'] = themeMode.value == ThemeMode.dark ? 0 : 1;
+              box.put('prefs', prefs);
             } else {
               setState(() {
                 currPage = index;
